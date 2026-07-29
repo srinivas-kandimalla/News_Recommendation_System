@@ -1,7 +1,10 @@
 from flask import Flask
 from app.config.config import Config
+from app.database.db import db
+
 from app.routes.home_routes import home_bp
-from app.database.db import db   # Import database connection
+from app.routes.user_routes import user_bp
+
 
 def create_app():
     app = Flask(__name__)
@@ -11,5 +14,6 @@ def create_app():
 
     # Register Blueprints
     app.register_blueprint(home_bp)
+    app.register_blueprint(user_bp)
 
     return app
