@@ -1,5 +1,9 @@
 from flask import Blueprint
-from app.controllers.user_controller import register_user, login
+from app.controllers.user_controller import (
+    register_user,
+    login,
+    profile
+)
 
 user_bp = Blueprint("user", __name__)
 
@@ -11,3 +15,8 @@ def register():
 @user_bp.route("/login", methods=["POST"])
 def user_login():
     return login()
+
+
+@user_bp.route("/profile", methods=["GET"])
+def user_profile():
+    return profile()

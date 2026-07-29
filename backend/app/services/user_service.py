@@ -1,4 +1,5 @@
 import bcrypt
+from bson import ObjectId
 
 from app.models.user_model import users_collection
 from app.utils.jwt_helper import generate_token
@@ -107,4 +108,28 @@ def login_user(user_data):
     return {
         "success": False,
         "message": "Invalid email or password"
+    }
+
+
+def get_profile(user_data):
+    """
+    Fetch logged-in user's profile.
+    """
+
+    user = users_collection.find_one(
+        {"_id": ObjectId(user_data["user_id"])}
+    )
+
+    if not user:
+        return {
+            "success": False,
+            "message": "User not found"
+        }
+
+    return {
+        "success": True,
+        "user": {
+            "name": user["name"],
+            "email": user["email"]
+        }
     }
