@@ -1,14 +1,10 @@
 from flask import Flask
+from app.routes.home_routes import home_bp
 
 def create_app():
     app = Flask(__name__)
 
-    @app.route("/")
-    def home():
-        return {
-            "project": "Context-Aware Personalized News Recommendation System",
-            "status": "Backend Running Successfully 🚀",
-            "version": "0.2.0"
-        }
+    # Register Blueprints
+    app.register_blueprint(home_bp)
 
     return app
