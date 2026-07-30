@@ -2,7 +2,10 @@ import jwt
 from datetime import datetime, timedelta
 from functools import wraps
 from flask import request, jsonify
+from bson import ObjectId
+
 from app.config.config import Config
+from app.database.db import users_collection
 
 
 def generate_token(user):
@@ -46,11 +49,21 @@ def token_required(f):
             else:
                 token = auth_header
 
-            current_user = jwt.decode(
+            payload = jwt.decode(
                 token,
                 Config.SECRET_KEY,
                 algorithms=["HS256"]
             )
+
+            current_user = users_collection.find_one({
+                "_id": ObjectId(payload["user_id"])
+            })
+
+            if not current_user:
+                return jsonify({
+                    "success": False,
+                    "message": "User not found"
+                }), 404
 
         except jwt.ExpiredSignatureError:
             return jsonify({
@@ -63,6 +76,12 @@ def token_required(f):
                 "success": False,
                 "message": "Invalid token"
             }), 401
+
+        except Exception as e:
+            return jsonify({
+                "success": False,
+                "message": str(e)
+            }), 500
 
         return f(current_user, *args, **kwargs)
 

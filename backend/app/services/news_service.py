@@ -1,12 +1,20 @@
+import math
 from datetime import datetime
+
 from bson import ObjectId
 from bson.errors import InvalidId
-from app.models.news_model import news_collection
+from pymongo import DESCENDING
 
+from app.models.news_model import news_collection
+from app.ai.embedding_service import generate_embedding
+
+
+# ======================================================
+# Create News
+# ======================================================
 
 def create_news(news_data):
 
-    # Validation
     if not news_data.get("title"):
         return {
             "success": False,
@@ -25,7 +33,9 @@ def create_news(news_data):
             "message": "Category is required"
         }
 
-    # Add timestamp
+    text = news_data["title"] + " " + news_data["content"]
+
+    news_data["embedding"] = generate_embedding(text)
     news_data["created_at"] = datetime.utcnow()
 
     result = news_collection.insert_one(news_data)
@@ -37,21 +47,51 @@ def create_news(news_data):
     }
 
 
-def get_all_news():
+# ======================================================
+# Get All News (Pagination)
+# ======================================================
+
+def get_all_news(page=1, limit=5):
+
+    skip = (page - 1) * limit
+
+    total_news = news_collection.count_documents({})
+
+    news = (
+        news_collection.find()
+        .sort("_id", DESCENDING)
+        .skip(skip)
+        .limit(limit)
+    )
 
     news_list = []
 
-    news = news_collection.find()
-
     for item in news:
-        item["_id"] = str(item["_id"])
-        news_list.append(item)
+
+        news_list.append({
+            "_id": str(item.get("_id")),
+            "title": item.get("title", ""),
+            "content": item.get("content", ""),
+            "category": item.get("category", ""),
+            "author": item.get("author", ""),
+            "source": item.get("source", ""),
+            "image_url": item.get("image_url", ""),
+            "created_at": item.get("created_at")
+        })
 
     return {
         "success": True,
+        "page": page,
+        "limit": limit,
+        "total_news": total_news,
+        "total_pages": math.ceil(total_news / limit),
         "news": news_list
     }
 
+
+# ======================================================
+# Get Single News
+# ======================================================
 
 def get_news_by_id(news_id):
 
@@ -83,6 +123,10 @@ def get_news_by_id(news_id):
     }
 
 
+# ======================================================
+# Update News
+# ======================================================
+
 def update_news(news_id, news_data):
 
     try:
@@ -104,10 +148,14 @@ def update_news(news_id, news_data):
             "status_code": 404
         }
 
-    # Prevent updating MongoDB _id
     news_data.pop("_id", None)
 
-    # Add updated timestamp
+    title = news_data.get("title", news["title"])
+    content = news_data.get("content", news["content"])
+
+    text = title + " " + content
+
+    news_data["embedding"] = generate_embedding(text)
     news_data["updated_at"] = datetime.utcnow()
 
     result = news_collection.update_one(
@@ -132,6 +180,10 @@ def update_news(news_id, news_data):
         "status_code": 200
     }
 
+
+# ======================================================
+# Delete News
+# ======================================================
 
 def delete_news(news_id):
 
@@ -161,3 +213,68 @@ def delete_news(news_id):
         "message": "News deleted successfully",
         "status_code": 200
     }
+
+
+# ======================================================
+# Search News
+# ======================================================
+
+def search_news(query):
+
+    try:
+
+        news = (
+            news_collection.find({
+                "$or": [
+                    {
+                        "title": {
+                            "$regex": query,
+                            "$options": "i"
+                        }
+                    },
+                    {
+                        "author": {
+                            "$regex": query,
+                            "$options": "i"
+                        }
+                    },
+                    {
+                        "category": {
+                            "$regex": query,
+                            "$options": "i"
+                        }
+                    }
+                ]
+            })
+            .sort("_id", DESCENDING)
+        )
+
+        results = []
+
+        for item in news:
+
+            results.append({
+                "_id": str(item.get("_id")),
+                "title": item.get("title", ""),
+                "content": item.get("content", ""),
+                "category": item.get("category", ""),
+                "author": item.get("author", ""),
+                "source": item.get("source", ""),
+                "image_url": item.get("image_url", ""),
+                "created_at": item.get("created_at")
+            })
+
+        return {
+            "success": True,
+            "count": len(results),
+            "news": results,
+            "status_code": 200
+        }
+
+    except Exception as e:
+
+        return {
+            "success": False,
+            "message": str(e),
+            "status_code": 500
+        }
