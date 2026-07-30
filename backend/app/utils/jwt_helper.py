@@ -15,28 +15,23 @@ def generate_token(user):
         "exp": datetime.utcnow() + timedelta(hours=24)
     }
 
-    print("SECRET KEY USED TO GENERATE:", Config.SECRET_KEY)
-
     token = jwt.encode(
         payload,
         Config.SECRET_KEY,
         algorithm="HS256"
     )
 
-    print("GENERATED TOKEN:", token)
-
     return token
 
 
 def token_required(f):
+    """
+    Verify JWT token before allowing access to protected routes.
+    """
     @wraps(f)
     def decorated(*args, **kwargs):
 
-        print("\n========== JWT DEBUG ==========")
-        print("SECRET KEY USED TO VERIFY:", Config.SECRET_KEY)
-
         auth_header = request.headers.get("Authorization")
-        print("Authorization Header:", auth_header)
 
         if not auth_header:
             return jsonify({
@@ -51,45 +46,24 @@ def token_required(f):
             else:
                 token = auth_header
 
-            print("Extracted Token:", token)
-
-            data = jwt.decode(
+            current_user = jwt.decode(
                 token,
                 Config.SECRET_KEY,
                 algorithms=["HS256"]
             )
 
-            print("Decoded Payload:", data)
-            print("========== SUCCESS ==========\n")
-
         except jwt.ExpiredSignatureError:
-            print("JWT ERROR: Token has expired")
             return jsonify({
                 "success": False,
                 "message": "Token has expired"
             }), 401
 
-        except jwt.InvalidSignatureError:
-            print("JWT ERROR: Signature verification failed")
+        except jwt.InvalidTokenError:
             return jsonify({
                 "success": False,
-                "message": "Signature verification failed"
+                "message": "Invalid token"
             }), 401
 
-        except jwt.InvalidTokenError as e:
-            print("JWT ERROR:", str(e))
-            return jsonify({
-                "success": False,
-                "message": str(e)
-            }), 401
-
-        except Exception as e:
-            print("UNEXPECTED ERROR:", str(e))
-            return jsonify({
-                "success": False,
-                "message": str(e)
-            }), 401
-
-        return f(data, *args, **kwargs)
+        return f(current_user, *args, **kwargs)
 
     return decorated
