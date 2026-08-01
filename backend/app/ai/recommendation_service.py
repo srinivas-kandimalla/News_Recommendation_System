@@ -295,16 +295,33 @@ def get_personalized_recommendations(
         reverse=True
     )
 
+    filtered_recommendations = []
+    category_counts = {}
+    source_counts = {}
+
+    for item in recommendations:
+        category = item.get("category", "")
+        source = item.get("source", "")
+
+        cat_count = category_counts.get(category, 0)
+        src_count = source_counts.get(source, 0)
+
+        if cat_count < 2 and src_count < 2:
+            filtered_recommendations.append(item)
+            category_counts[category] = cat_count + 1
+            source_counts[source] = src_count + 1
+
+            if len(filtered_recommendations) == top_k:
+                break
+
     return {
 
         "success": True,
 
-        "count": len(
-            recommendations[:top_k]
-        ),
+        "count": len(filtered_recommendations),
 
-        "recommendations": recommendations[:top_k],
+        "recommendations": filtered_recommendations,
 
         "status_code": 200
 
-    }
+    }
