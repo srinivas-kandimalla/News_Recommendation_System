@@ -14,6 +14,7 @@ from app.ai.scoring_service import (
     calculate_interest_score
 )
 from app.ai.ranking_service import calculate_hybrid_score
+from app.ai.explanation_service import generate_reason
 
 
 # =====================================================
@@ -222,6 +223,14 @@ def get_personalized_recommendations(
 
         )
 
+        reason = generate_reason(
+            news,
+            semantic_score,
+            popularity_score,
+            recency_score,
+            interest_score
+        )
+
         hybrid_score = calculate_hybrid_score(
 
             semantic_score,
@@ -275,7 +284,9 @@ def get_personalized_recommendations(
             "hybrid_score": round(
                 hybrid_score,
                 4
-            )
+            ),
+
+            "reason": reason
 
         })
 

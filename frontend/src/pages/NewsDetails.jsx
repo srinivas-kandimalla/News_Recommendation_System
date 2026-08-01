@@ -12,6 +12,7 @@ import {
   Stack,
   Snackbar,
   Alert,
+  Skeleton,
 } from "@mui/material";
 
 import BookmarkIcon from "@mui/icons-material/Bookmark";
@@ -137,8 +138,22 @@ function NewsDetails() {
 
   if (loading) {
     return (
-      <Container sx={{ mt: 5, textAlign: "center" }}>
-        <CircularProgress />
+      <Container maxWidth="md" sx={{ mt: 5, mb: 5 }}>
+        <Card elevation={4}>
+          <Skeleton variant="rectangular" height={400} />
+          <CardContent sx={{ p: 4 }}>
+            <Skeleton variant="text" width="85%" height={48} sx={{ mb: 2 }} />
+            <Skeleton variant="text" width="35%" height={24} sx={{ mb: 1 }} />
+            <Skeleton variant="text" width="45%" height={24} sx={{ mb: 1 }} />
+            <Skeleton variant="text" width="40%" height={24} sx={{ mb: 3 }} />
+            <Skeleton variant="rectangular" height={120} sx={{ mb: 3 }} />
+            <Stack direction="row" spacing={2}>
+              <Skeleton variant="rectangular" width={100} height={36} />
+              <Skeleton variant="rectangular" width={120} height={36} />
+              <Skeleton variant="rectangular" width={90} height={36} />
+            </Stack>
+          </CardContent>
+        </Card>
       </Container>
     );
   }
@@ -212,8 +227,7 @@ function NewsDetails() {
             <Stack
               direction="row"
               spacing={2}
-              flexWrap="wrap"
-              sx={{ mt: 4 }}
+              sx={{ mt: 4, flexWrap: "wrap" }}
             >
               <Button
                 variant="contained"

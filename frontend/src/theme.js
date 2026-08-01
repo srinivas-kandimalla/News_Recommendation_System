@@ -3,43 +3,49 @@ import { createTheme } from "@mui/material/styles";
 const theme = createTheme({
   palette: {
     mode: "light",
-
     primary: {
-      main: "#1976d2",
+      main: "#0f172a", // Deep Slate
+      contrastText: "#ffffff",
     },
-
     secondary: {
-      main: "#ff9800",
+      main: "#991b1b", // Editorial Crimson
+      contrastText: "#ffffff",
     },
-
+    info: {
+      main: "#0d9488", // AI Accent Teal
+      contrastText: "#ffffff",
+    },
     success: {
-      main: "#2e7d32",
+      main: "#15803d",
+      contrastText: "#ffffff",
     },
-
+    warning: {
+      main: "#b45309",
+      contrastText: "#ffffff",
+    },
     error: {
-      main: "#d32f2f",
+      main: "#991b1b", // Editorial Crimson for errors/critical highlights
+      contrastText: "#ffffff",
     },
-
     background: {
-      default: "#f5f5f5",
+      default: "#f8fafc", // Soft Slate-tinted Off-White
       paper: "#ffffff",
+    },
+    text: {
+      primary: "#0f172a",
+      secondary: "#475569",
     },
   },
 
   typography: {
-    fontFamily: [
-      "Roboto",
-      "Arial",
-      "sans-serif",
-    ].join(","),
+    fontFamily: ["'Inter'", "system-ui", "-apple-system", "sans-serif"].join(","),
 
-    h4: {
-      fontWeight: 700,
-    },
-
-    h5: {
-      fontWeight: 600,
-    },
+    h1: { fontFamily: "'Merriweather', Georgia, serif", fontWeight: 700 },
+    h2: { fontFamily: "'Merriweather', Georgia, serif", fontWeight: 700 },
+    h3: { fontFamily: "'Merriweather', Georgia, serif", fontWeight: 700 },
+    h4: { fontFamily: "'Merriweather', Georgia, serif", fontWeight: 700 },
+    h5: { fontFamily: "'Merriweather', Georgia, serif", fontWeight: 700 },
+    h6: { fontFamily: "'Merriweather', Georgia, serif", fontWeight: 700 },
 
     button: {
       textTransform: "none",
@@ -48,23 +54,22 @@ const theme = createTheme({
   },
 
   shape: {
-    borderRadius: 12,
+    borderRadius: 8,
   },
 
   components: {
     MuiCard: {
       styleOverrides: {
         root: {
-          borderRadius: 16,
-          transition: "0.3s",
+          borderRadius: 12,
+          boxShadow: "0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1)",
         },
       },
     },
-
     MuiButton: {
       styleOverrides: {
         root: {
-          borderRadius: 10,
+          borderRadius: 8,
         },
       },
     },

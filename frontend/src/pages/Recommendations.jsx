@@ -5,17 +5,17 @@ import {
   Typography,
   Grid,
   Card,
-  CardMedia,
   CardContent,
-  CardActions,
   Button,
-  CircularProgress,
-  Chip,
   Box,
+  Skeleton,
+  Alert,
 } from "@mui/material";
+import SmartToyIcon from "@mui/icons-material/SmartToy";
 
 import { getPersonalizedRecommendations } from "../services/newsService";
 import { useAuth } from "../context/AuthContext";
+import NewsCard from "../components/NewsCard";
 
 function Recommendations() {
   const navigate = useNavigate();
@@ -23,6 +23,7 @@ function Recommendations() {
 
   const [recommendations, setRecommendations] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     loadRecommendations();
@@ -30,115 +31,85 @@ function Recommendations() {
 
   const loadRecommendations = async () => {
     try {
+      setLoading(true);
+      setError(null);
       const data = await getPersonalizedRecommendations(token);
 
       if (data.success) {
-        setRecommendations(data.recommendations);
+        setRecommendations(data.recommendations || []);
+      } else {
+        setError(data.message || "Failed to fetch recommendations.");
       }
-    } catch (error) {
-      console.error(error);
+    } catch (err) {
+      console.error(err);
+      setError("Unable to load recommendations. Please try again.");
     } finally {
       setLoading(false);
     }
   };
 
-  if (loading) {
-    return (
-      <Container sx={{ mt: 6, textAlign: "center" }}>
-        <CircularProgress />
-      </Container>
-    );
-  }
-
   return (
-    <Container maxWidth="lg" sx={{ mt: 5, mb: 5 }}>
+    <Container maxWidth="lg" sx={{ mt: 5, mb: 6 }}>
       <Typography variant="h4" fontWeight="bold" gutterBottom>
         🤖 AI Personalized Recommendations
       </Typography>
 
-      {recommendations.length === 0 ? (
-        <Box sx={{ mt: 8, textAlign: "center" }}>
-          <Typography variant="h6">
-            No personalized recommendations available.
+      {error && (
+        <Alert severity="error" sx={{ mb: 4 }}>
+          {error}
+        </Alert>
+      )}
+
+      <Grid container spacing={3}>
+        {loading
+          ? Array.from(new Array(6)).map((_, index) => (
+              <Grid xs={12} sm={6} md={4} key={index}>
+                <Card sx={{ height: "100%" }}>
+                  <Skeleton variant="rectangular" height={200} />
+                  <CardContent>
+                    <Skeleton variant="text" width="60%" height={24} sx={{ mb: 1 }} />
+                    <Skeleton variant="text" width="90%" height={32} />
+                    <Skeleton variant="text" width="40%" height={20} sx={{ mb: 2 }} />
+                    <Skeleton variant="rectangular" height={40} />
+                  </CardContent>
+                </Card>
+              </Grid>
+            ))
+          : recommendations.map((news) => (
+              <Grid xs={12} sm={6} md={4} key={news._id}>
+                <NewsCard news={news} showScore showExplanation />
+              </Grid>
+            ))}
+      </Grid>
+
+      {!loading && !error && recommendations.length === 0 && (
+        <Box
+          sx={{
+            textAlign: "center",
+            py: 8,
+            px: 2,
+            backgroundColor: "background.paper",
+            borderRadius: 2,
+            boxShadow: 1,
+            mt: 2,
+          }}
+        >
+          <SmartToyIcon sx={{ fontSize: 60, color: "text.secondary", mb: 2 }} />
+          <Typography variant="h6" color="text.secondary" gutterBottom>
+            No Personalized Recommendations Yet
           </Typography>
 
-          <Typography color="text.secondary" sx={{ mt: 1 }}>
-            Read a few news articles first so the AI can learn your interests.
+          <Typography color="text.secondary" sx={{ mb: 3 }}>
+            Read a few news articles first so the AI recommendation engine can learn your preferences!
           </Typography>
 
           <Button
             variant="contained"
-            sx={{ mt: 3 }}
             onClick={() => navigate("/")}
           >
             Browse News
           </Button>
         </Box>
-      ) : (
-        <Grid container spacing={3}>
-          {recommendations.map((news) => (
-            <Grid item xs={12} sm={6} md={4} key={news._id}>
-              <Card
-                sx={{
-                  height: "100%",
-                  display: "flex",
-                  flexDirection: "column",
-                  transition: "0.3s",
-                  "&:hover": {
-                    transform: "translateY(-6px)",
-                    boxShadow: 6,
-                  },
-                }}
-              >
-                {news.image_url && (
-                  <CardMedia
-                    component="img"
-                    height="200"
-                    image={news.image_url}
-                    alt={news.title}
-                  />
-                )}
-
-                <CardContent sx={{ flexGrow: 1 }}>
-                  <Typography variant="h6" gutterBottom>
-                    {news.title}
-                  </Typography>
-
-                  <Chip
-                    label={news.category}
-                    color="primary"
-                    size="small"
-                  />
-
-                  <Typography
-                    variant="body2"
-                    color="text.secondary"
-                    sx={{ mt: 2 }}
-                  >
-                    {news.author || "Unknown Author"}
-                  </Typography>
-
-                  <Typography
-                    variant="body2"
-                    color="success.main"
-                    sx={{ mt: 1 }}
-                  >
-                    AI Score: {(news.hybrid_score * 100).toFixed(1)}%
-                  </Typography>
-                </CardContent>
-
-                <CardActions>
-                  <Button
-                    variant="contained"
-                    onClick={() => navigate(`/news/${news._id}`)}
-                  >
-                    Read More
-                  </Button>
-                </CardActions>
-              </Card>
-            </Grid>
-          ))}
-        </Grid>
       )}
     </Container>
   );
