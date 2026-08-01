@@ -140,3 +140,17 @@ export const getAdminDashboard = async () => {
   const { data } = await api.get("/admin/dashboard");
   return data;
 };
+
+// ======================================================
+// Reading History
+// ======================================================
+
+export const recordReadingHistory = async (newsId, token) => {
+  const { data } = await api.post(
+    `/reading-history/${newsId}`,
+    {},
+    authHeader(token)
+  );
+
+  return data;
+};

@@ -115,6 +115,7 @@ def get_news_by_id(news_id):
         }
 
     news["_id"] = str(news["_id"])
+    news.pop("embedding", None)
 
     return {
         "success": True,
@@ -172,6 +173,7 @@ def update_news(news_id, news_data):
 
     updated_news = news_collection.find_one({"_id": object_id})
     updated_news["_id"] = str(updated_news["_id"])
+    updated_news.pop("embedding", None)
 
     return {
         "success": True,

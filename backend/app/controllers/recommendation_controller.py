@@ -20,8 +20,6 @@ def personalized_recommendations(current_user):
         str(current_user["_id"])
     )
 
-    print("DEBUG RESULT:", result)   # <-- Add this line
-
     status_code = result.pop("status_code")
 
     return jsonify(result), status_code

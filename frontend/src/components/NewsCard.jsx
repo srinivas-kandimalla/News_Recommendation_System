@@ -8,13 +8,13 @@ import {
 } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import { bookmarkNews } from "../services/newsService";
+import { useAuth } from "../context/AuthContext";
 
 function NewsCard({ news }) {
   const navigate = useNavigate();
+  const { token } = useAuth();
 
   const handleBookmark = async () => {
-    const token = localStorage.getItem("token");
-
     if (!token) {
       alert("Please login first.");
       return;

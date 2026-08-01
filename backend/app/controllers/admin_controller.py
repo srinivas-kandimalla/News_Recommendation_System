@@ -1,4 +1,5 @@
 from flask import jsonify
+from app.utils.jwt_helper import token_required
 
 from app.services.admin_service import get_admin_dashboard
 
@@ -7,7 +8,8 @@ from app.services.admin_service import get_admin_dashboard
 # Admin Dashboard Controller
 # ======================================================
 
-def admin_dashboard_controller():
+@token_required
+def admin_dashboard_controller(current_user):
 
     result = get_admin_dashboard()
 

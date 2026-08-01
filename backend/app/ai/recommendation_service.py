@@ -1,23 +1,19 @@
 from bson import ObjectId
 from bson.errors import InvalidId
-from sklearn.metrics.pairwise import cosine_similarity
 import numpy as np
 
 from app.models.news_model import news_collection
+
 from app.services.reading_history_service import get_user_read_news
 from app.services.analytics_service import get_user_analytics
 
-
-# =====================================================
-# Cosine Similarity
-# =====================================================
-
-def calculate_similarity(embedding1, embedding2):
-    similarity = cosine_similarity(
-        np.array(embedding1).reshape(1, -1),
-        np.array(embedding2).reshape(1, -1)
-    )
-    return float(similarity[0][0])
+from app.ai.similarity_service import calculate_similarity
+from app.ai.scoring_service import (
+    calculate_recency_score,
+    calculate_popularity_score,
+    calculate_interest_score
+)
+from app.ai.ranking_service import calculate_hybrid_score
 
 
 # =====================================================
@@ -30,6 +26,7 @@ def get_recommendations(news_id, top_k=5):
         object_id = ObjectId(news_id)
 
     except InvalidId:
+
         return {
             "success": False,
             "message": "Invalid News ID",
@@ -41,6 +38,7 @@ def get_recommendations(news_id, top_k=5):
     })
 
     if not current_news:
+
         return {
             "success": False,
             "message": "News not found",
@@ -48,6 +46,7 @@ def get_recommendations(news_id, top_k=5):
         }
 
     if "embedding" not in current_news:
+
         return {
             "success": False,
             "message": "Embedding not found",
@@ -66,103 +65,133 @@ def get_recommendations(news_id, top_k=5):
         if "embedding" not in news:
             continue
 
-        similarity = calculate_similarity(
+        semantic_score = calculate_similarity(
             current_embedding,
             news["embedding"]
         )
 
         recommendations.append({
+
             "_id": str(news["_id"]),
+
             "title": news.get("title", ""),
+
             "content": news.get("content", ""),
+
             "category": news.get("category", ""),
+
             "author": news.get("author", ""),
+
             "source": news.get("source", ""),
+
             "image_url": news.get("image_url", ""),
+
             "created_at": news.get("created_at"),
-            "similarity_score": round(similarity, 4)
+
+            "semantic_score": round(
+                semantic_score,
+                4
+            )
+
         })
 
     recommendations.sort(
-        key=lambda x: x["similarity_score"],
+        key=lambda x: x["semantic_score"],
         reverse=True
     )
 
     return {
+
         "success": True,
+
         "count": len(recommendations[:top_k]),
+
         "recommendations": recommendations[:top_k],
+
         "status_code": 200
+
     }
 
 
 # =====================================================
-# Hybrid Personalized Recommendation
+# Personalized Recommendation
 # =====================================================
 
-def get_personalized_recommendations(user_id, top_k=5):
-
-    # ---------------------------------
-    # Reading History
-    # ---------------------------------
+def get_personalized_recommendations(
+    user_id,
+    top_k=5
+):
 
     read_news_ids = get_user_read_news(user_id)
 
     if not read_news_ids:
-        return {
-            "success": False,
-            "message": "No reading history found",
-            "status_code": 404
-        }
 
-    # ---------------------------------
-    # Build User Interest Profile
-    # ---------------------------------
+        return {
+
+            "success": False,
+
+            "message": "No reading history found",
+
+            "status_code": 404
+
+        }
 
     user_embeddings = []
 
     for news_id in read_news_ids:
 
-        # news_id is already an ObjectId
         news = news_collection.find_one({
             "_id": news_id
         })
 
         if news and "embedding" in news:
-            user_embeddings.append(news["embedding"])
+
+            user_embeddings.append(
+                news["embedding"]
+            )
 
     if not user_embeddings:
+
         return {
+
             "success": False,
+
             "message": "No embeddings found",
+
             "status_code": 404
+
         }
 
-    user_profile = np.mean(user_embeddings, axis=0)
-
-    # ---------------------------------
-    # User Analytics
-    # ---------------------------------
+    user_profile = np.mean(
+        user_embeddings,
+        axis=0
+    )
 
     analytics = get_user_analytics(user_id)
 
     favorite_category = None
+    favorite_author = None
 
     if analytics.get("success"):
-        favorite_category = analytics["analytics"].get(
-            "favorite_category"
-        )
 
-    # ---------------------------------
-    # Generate Recommendations
-    # ---------------------------------
+        favorite_category = analytics[
+            "analytics"
+        ].get("favorite_category")
+
+        favorite_author = analytics[
+            "analytics"
+        ].get("favorite_author")
 
     recommendations = []
 
     unread_news = news_collection.find({
+
         "_id": {
+
             "$nin": read_news_ids
+
         }
+
     })
 
     for news in unread_news:
@@ -175,26 +204,79 @@ def get_personalized_recommendations(user_id, top_k=5):
             news["embedding"]
         )
 
-        hybrid_score = semantic_score
+        recency_score = calculate_recency_score(
+            news.get("created_at")
+        )
 
-        # Bonus for favourite category
-        if (
-            favorite_category
-            and news.get("category") == favorite_category
-        ):
-            hybrid_score += 0.15
+        popularity_score = calculate_popularity_score(
+            news["_id"]
+        )
+
+        interest_score = calculate_interest_score(
+
+            news,
+
+            favorite_category,
+
+            favorite_author
+
+        )
+
+        hybrid_score = calculate_hybrid_score(
+
+            semantic_score,
+
+            recency_score,
+
+            popularity_score,
+
+            interest_score
+
+        )
 
         recommendations.append({
+
             "_id": str(news["_id"]),
+
             "title": news.get("title", ""),
+
             "content": news.get("content", ""),
+
             "category": news.get("category", ""),
+
             "author": news.get("author", ""),
+
             "source": news.get("source", ""),
+
             "image_url": news.get("image_url", ""),
+
             "created_at": news.get("created_at"),
-            "similarity_score": round(semantic_score, 4),
-            "hybrid_score": round(hybrid_score, 4)
+
+            "semantic_score": round(
+                semantic_score,
+                4
+            ),
+
+            "recency_score": round(
+                recency_score,
+                4
+            ),
+
+            "popularity_score": round(
+                popularity_score,
+                4
+            ),
+
+            "interest_score": round(
+                interest_score,
+                4
+            ),
+
+            "hybrid_score": round(
+                hybrid_score,
+                4
+            )
+
         })
 
     recommendations.sort(
@@ -203,8 +285,15 @@ def get_personalized_recommendations(user_id, top_k=5):
     )
 
     return {
+
         "success": True,
-        "count": len(recommendations[:top_k]),
+
+        "count": len(
+            recommendations[:top_k]
+        ),
+
         "recommendations": recommendations[:top_k],
+
         "status_code": 200
+
     }

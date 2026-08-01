@@ -24,6 +24,7 @@ import {
   bookmarkNews,
   likeNews,
   dislikeNews,
+  recordReadingHistory,
 } from "../services/newsService";
 
 import { useAuth } from "../context/AuthContext";
@@ -46,6 +47,17 @@ function NewsDetails() {
   useEffect(() => {
     fetchNews();
   }, [id]);
+
+  useEffect(() => {
+    if (news && isAuthenticated && token) {
+      recordReadingHistory(news._id, token).catch((err) => {
+        console.warn(
+          "Failed to record reading history:",
+          err?.response?.data?.message || err.message
+        );
+      });
+    }
+  }, [news, isAuthenticated, token]);
 
   const fetchNews = async () => {
     try {

@@ -5,12 +5,21 @@ const AuthContext = createContext();
 export function AuthProvider({ children }) {
   const [token, setToken] = useState(localStorage.getItem("token"));
 
+  console.log(
+    "AuthContext RENDER - current state token:",
+    token,
+    "| localStorage token:",
+    localStorage.getItem("token")
+  );
+
   useEffect(() => {
     const storedToken = localStorage.getItem("token");
+    console.log("AuthContext useEffect - storedToken:", storedToken);
     setToken(storedToken);
   }, []);
 
   const login = (jwtToken) => {
+    console.log("AuthContext login() CALLED with jwtToken:", jwtToken);
     localStorage.setItem("token", jwtToken);
     setToken(jwtToken);
   };

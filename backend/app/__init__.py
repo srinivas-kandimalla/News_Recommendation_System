@@ -1,5 +1,6 @@
 from flask import Flask
 from flask_cors import CORS
+import os
 
 from app.config.config import Config
 from app.database.db import db
@@ -14,6 +15,10 @@ from app.routes.reaction_routes import reaction_bp
 from app.routes.analytics_routes import analytics_bp
 from app.routes.trending_routes import trending_bp
 from app.routes.admin_routes import admin_bp
+from app.routes.news_fetch_routes import news_fetch_bp
+
+# NEW
+from app.scheduler import start_scheduler
 
 
 def create_app():
@@ -22,7 +27,7 @@ def create_app():
     # Load configuration
     app.config.from_object(Config)
 
-    # Enable CORS for React development server
+    # Enable CORS
     CORS(
         app,
         resources={
@@ -47,5 +52,10 @@ def create_app():
     app.register_blueprint(analytics_bp)
     app.register_blueprint(trending_bp)
     app.register_blueprint(admin_bp)
+    app.register_blueprint(news_fetch_bp)
+
+    # Start scheduler only once
+    if os.environ.get("WERKZEUG_RUN_MAIN") == "true" or not app.debug:
+        start_scheduler()
 
     return app

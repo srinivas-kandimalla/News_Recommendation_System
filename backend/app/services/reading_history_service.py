@@ -76,9 +76,13 @@ def get_user_read_news(user_id):
     """
     Returns a list of news IDs that the user has already read.
     """
+    try:
+        user_object_id = ObjectId(user_id)
+    except (InvalidId, Exception):
+        return []
 
     history = reading_history_collection.find({
-        "user_id": ObjectId(user_id)
+        "user_id": user_object_id
     })
 
     news_ids = []

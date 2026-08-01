@@ -9,9 +9,11 @@ import {
 } from "@mui/material";
 
 import { loginUser } from "../services/authService";
+import { useAuth } from "../context/AuthContext";
 
 function Login() {
   const navigate = useNavigate();
+  const { login } = useAuth();
 
   const [form, setForm] = useState({
     email: "",
@@ -30,9 +32,16 @@ function Login() {
 
     try {
       const data = await loginUser(form);
+      console.log("LOGIN API RESPONSE DATA:", data);
 
       if (data.success) {
-        localStorage.setItem("token", data.token);
+        console.log("EXECUTING login(data.token) with token:", data.token);
+        login(data.token);
+
+        console.log(
+          "IMMEDIATELY AFTER login(), localStorage token:",
+          localStorage.getItem("token")
+        );
 
         alert("Login Successful!");
 
