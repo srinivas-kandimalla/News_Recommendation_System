@@ -1,3 +1,5 @@
+import logging
+import re
 import requests
 from datetime import datetime
 from pymongo.errors import DuplicateKeyError
@@ -6,14 +8,7 @@ from app.config.config import Config
 from app.models.news_model import news_collection
 from app.ai.embedding_service import generate_embedding
 
-
-# ======================================================
-# Create Indexes (runs once)
-# ======================================================
-
-news_collection.create_index("url", unique=True)
-news_collection.create_index("created_at")
-news_collection.create_index("category")
+logger = logging.getLogger(__name__)
 
 
 # ======================================================
@@ -71,15 +66,59 @@ def detect_category(title, content):
             "science", "space",
             "research", "astronomy",
             "planet", "nasa"
+        ],
+
+        "Politics": [
+            "politics", "election", "government",
+            "parliament", "minister", "president",
+            "democrat", "republican", "senate"
+        ],
+
+        "World": [
+            "world", "global", "international",
+            "un", "united nations", "diplomacy", "foreign"
         ]
     }
 
     for category, keywords in categories.items():
-
-        if any(word in text for word in keywords):
-            return category
+        for word in keywords:
+            pattern = r"\b" + re.escape(word) + r"\b"
+            if re.search(pattern, text):
+                return category
 
     return "General"
+
+
+# ======================================================
+# Clean Content Artifacts
+# ======================================================
+
+def clean_content(text):
+    if not text:
+        return ""
+    # Strip [+1234 chars] artifacts from GNews API
+    cleaned = re.sub(r"\s*\[\+\d+\s+chars\]", "", text)
+    return cleaned.strip()
+
+
+def extract_source(article):
+    source_obj = article.get("source")
+    if isinstance(source_obj, dict):
+        val = source_obj.get("name") or source_obj.get("url")
+        if val and str(val).strip():
+            return str(val).strip()
+    elif isinstance(source_obj, str) and source_obj.strip():
+        return source_obj.strip()
+
+    publisher_obj = article.get("publisher")
+    if isinstance(publisher_obj, dict):
+        val = publisher_obj.get("name") or publisher_obj.get("url")
+        if val and str(val).strip():
+            return str(val).strip()
+    elif isinstance(publisher_obj, str) and publisher_obj.strip():
+        return publisher_obj.strip()
+
+    return "Unknown"
 
 
 # ======================================================
@@ -88,8 +127,7 @@ def detect_category(title, content):
 
 def fetch_latest_news():
 
-    print("=" * 60)
-    print("🔄 Fetching latest news from GNews...")
+    logger.info("Fetching latest news from GNews...")
 
     url = "https://gnews.io/api/v4/top-headlines"
 
@@ -119,7 +157,7 @@ def fetch_latest_news():
 
     except Exception as e:
 
-        print("❌ GNews Error:", e)
+        logger.error(f"GNews Fetch Error: {e}")
 
         return {
             "success": False,
@@ -145,27 +183,19 @@ def fetch_latest_news():
         if not title:
             continue
 
-        if news_collection.find_one({"url": article_url}):
-            skipped += 1
-            continue
+        description = clean_content(article.get("description", ""))
 
-        description = article.get("description", "")
+        raw_content = clean_content(article.get("content", ""))
 
         content = (
-            article.get("content")
+            raw_content
             or description
             or title
         )
 
         image_url = article.get("image", "")
 
-        source = article.get(
-            "source",
-            {}
-        ).get(
-            "name",
-            "Unknown"
-        )
+        source = extract_source(article)
 
         category = detect_category(
             title,
@@ -182,39 +212,39 @@ def fetch_latest_news():
         except Exception:
             published = datetime.utcnow()
 
+        # Generate embedding safely without losing article if embedding fails
+        embedding = None
         try:
-
             embedding = generate_embedding(
                 f"{title}\n\n{content}"
             )
+        except Exception as e:
+            logger.warning(f"Embedding generation failed for '{title}': {e}")
 
-            news_collection.insert_one({
+        # Construct news document
+        news_doc = {
+            "title": title,
+            "content": content,
+            "category": category,
+            "author": source,
+            "source": source,
+            "url": article_url,
+            "image_url": image_url,
+            "published": published,
+            "created_at": datetime.utcnow()
+        }
 
-                "title": title,
+        if embedding:
+            news_doc["embedding"] = embedding
 
-                "content": content,
+        # Atomic insertion utilizing DuplicateKeyError on unique URL index
+        try:
 
-                "category": category,
-
-                "author": source,
-
-                "source": source,
-
-                "url": article_url,
-
-                "image_url": image_url,
-
-                "published": published,
-
-                "embedding": embedding,
-
-                "created_at": datetime.utcnow()
-
-            })
+            news_collection.insert_one(news_doc)
 
             inserted += 1
 
-            print(f"📰 {title}")
+            logger.info(f"Inserted article: {title}")
 
         except DuplicateKeyError:
 
@@ -224,15 +254,9 @@ def fetch_latest_news():
 
             failed += 1
 
-            print(f"❌ Failed: {title}")
-            print(e)
+            logger.error(f"Failed to insert article '{title}': {e}")
 
-    print("=" * 60)
-    print("✅ Fetch Completed")
-    print(f"Inserted : {inserted}")
-    print(f"Skipped  : {skipped}")
-    print(f"Failed   : {failed}")
-    print("=" * 60)
+    logger.info(f"Fetch Completed - Inserted: {inserted}, Skipped: {skipped}, Failed: {failed}")
 
     return {
 

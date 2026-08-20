@@ -1,4 +1,5 @@
 import math
+import re
 from datetime import datetime
 
 from bson import ObjectId
@@ -35,10 +36,20 @@ def create_news(news_data):
 
     text = news_data["title"] + " " + news_data["content"]
 
-    news_data["embedding"] = generate_embedding(text)
-    news_data["created_at"] = datetime.utcnow()
+    # Explicit whitelist to prevent mass assignment vulnerability
+    sanitized_news = {
+        "title": news_data["title"],
+        "content": news_data["content"],
+        "category": news_data["category"],
+        "author": news_data.get("author", ""),
+        "source": news_data.get("source", ""),
+        "image_url": news_data.get("image_url", ""),
+        "url": news_data.get("url") or f"custom://news/{ObjectId()}",
+        "embedding": generate_embedding(text),
+        "created_at": datetime.utcnow()
+    }
 
-    result = news_collection.insert_one(news_data)
+    result = news_collection.insert_one(sanitized_news)
 
     return {
         "success": True,
@@ -58,8 +69,8 @@ def get_all_news(page=1, limit=5):
     total_news = news_collection.count_documents({})
 
     news = (
-        news_collection.find()
-        .sort("_id", DESCENDING)
+        news_collection.find({}, projection={"embedding": 0})
+        .sort([("published", DESCENDING), ("created_at", DESCENDING), ("_id", DESCENDING)])
         .skip(skip)
         .limit(limit)
     )
@@ -76,7 +87,7 @@ def get_all_news(page=1, limit=5):
             "author": item.get("author", ""),
             "source": item.get("source", ""),
             "image_url": item.get("image_url", ""),
-            "created_at": item.get("created_at")
+            "created_at": item.get("published") or item.get("created_at")
         })
 
     return {
@@ -149,19 +160,25 @@ def update_news(news_id, news_data):
             "status_code": 404
         }
 
-    news_data.pop("_id", None)
+    # Whitelist allowable update fields
+    allowed_fields = ["title", "content", "category", "author", "source", "image_url", "url"]
+    update_payload = {}
 
-    title = news_data.get("title", news["title"])
-    content = news_data.get("content", news["content"])
+    for field in allowed_fields:
+        if field in news_data:
+            update_payload[field] = news_data[field]
+
+    title = update_payload.get("title", news["title"])
+    content = update_payload.get("content", news["content"])
 
     text = title + " " + content
 
-    news_data["embedding"] = generate_embedding(text)
-    news_data["updated_at"] = datetime.utcnow()
+    update_payload["embedding"] = generate_embedding(text)
+    update_payload["updated_at"] = datetime.utcnow()
 
     result = news_collection.update_one(
         {"_id": object_id},
-        {"$set": news_data}
+        {"$set": update_payload}
     )
 
     if result.modified_count == 0:
@@ -224,30 +241,32 @@ def delete_news(news_id):
 def search_news(query):
 
     try:
+        # Sanitize query against ReDoS / unescaped regex special characters
+        escaped_query = re.escape(query)
 
         news = (
             news_collection.find({
                 "$or": [
                     {
                         "title": {
-                            "$regex": query,
+                            "$regex": escaped_query,
                             "$options": "i"
                         }
                     },
                     {
                         "author": {
-                            "$regex": query,
+                            "$regex": escaped_query,
                             "$options": "i"
                         }
                     },
                     {
                         "category": {
-                            "$regex": query,
+                            "$regex": escaped_query,
                             "$options": "i"
                         }
                     }
                 ]
-            })
+            }, projection={"embedding": 0})
             .sort("_id", DESCENDING)
         )
 
@@ -279,4 +298,4 @@ def search_news(query):
             "success": False,
             "message": str(e),
             "status_code": 500
-        }
+        }

@@ -54,8 +54,8 @@ def create_app():
     app.register_blueprint(admin_bp)
     app.register_blueprint(news_fetch_bp)
 
-    # Start scheduler only once
-    if os.environ.get("WERKZEUG_RUN_MAIN") == "true" or not app.debug:
+    # Start scheduler only once (and skip during testing)
+    if not app.config.get("TESTING") and (os.environ.get("WERKZEUG_RUN_MAIN") == "true" or not app.debug):
         start_scheduler()
 
     return app

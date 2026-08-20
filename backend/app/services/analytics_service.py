@@ -65,18 +65,19 @@ def get_user_analytics(user_id):
 
     author_count = {}
 
-    history = reading_history_collection.find({
+    history = list(reading_history_collection.find({
         "user_id": user_object_id
-    })
+    }))
 
-    for item in history:
+    news_ids = [item["news_id"] for item in history if "news_id" in item]
 
-        news = news_collection.find_one({
-            "_id": item["news_id"]
-        })
+    if news_ids:
+        read_news = news_collection.find(
+            {"_id": {"$in": news_ids}},
+            projection={"category": 1, "author": 1}
+        )
 
-        if news:
-
+        for news in read_news:
             category = news.get("category", "Unknown")
             author = news.get("author", "Unknown")
 

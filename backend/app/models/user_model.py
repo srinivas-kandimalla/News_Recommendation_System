@@ -1,4 +1,1 @@
-from app.database.db import db
-
-# Users collection
-users_collection = db.users
+from app.database.db import users_collection

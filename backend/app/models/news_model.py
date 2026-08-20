@@ -1,4 +1,1 @@
-from app.database.db import db
-
-# News collection
-news_collection = db.news
+from app.database.db import news_collection

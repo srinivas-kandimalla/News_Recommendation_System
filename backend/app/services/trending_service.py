@@ -4,6 +4,7 @@ from app.models.news_model import news_collection
 from app.models.reading_history_model import reading_history_collection
 from app.models.bookmark_model import bookmark_collection
 from app.models.reaction_model import reaction_collection
+from app.ai.scoring_service import calculate_recency_score
 
 
 def calculate_freshness_score(created_at):
@@ -39,45 +40,69 @@ def calculate_freshness_score(created_at):
 
 def get_trending_news(top_k=5):
 
+    # Pre-aggregate metric counts across all news documents
+    read_counts = {
+        item["_id"]: item["count"]
+        for item in reading_history_collection.aggregate([
+            {"$group": {"_id": "$news_id", "count": {"$sum": 1}}}
+        ])
+    }
+
+    bookmark_counts = {
+        item["_id"]: item["count"]
+        for item in bookmark_collection.aggregate([
+            {"$group": {"_id": "$news_id", "count": {"$sum": 1}}}
+        ])
+    }
+
+    like_counts = {
+        item["_id"]: item["count"]
+        for item in reaction_collection.aggregate([
+            {"$match": {"reaction": "like"}},
+            {"$group": {"_id": "$news_id", "count": {"$sum": 1}}}
+        ])
+    }
+
+    dislike_counts = {
+        item["_id"]: item["count"]
+        for item in reaction_collection.aggregate([
+            {"$match": {"reaction": "dislike"}},
+            {"$group": {"_id": "$news_id", "count": {"$sum": 1}}}
+        ])
+    }
+
     trending = []
 
-    for news in news_collection.find():
+    for news in news_collection.find({}, projection={"embedding": 0}):
 
         news_id = news["_id"]
 
-        reads = reading_history_collection.count_documents({
-            "news_id": news_id
-        })
+        reads = read_counts.get(news_id, 0)
+        bookmarks = bookmark_counts.get(news_id, 0)
+        likes = like_counts.get(news_id, 0)
+        dislikes = dislike_counts.get(news_id, 0)
 
-        bookmarks = bookmark_collection.count_documents({
-            "news_id": news_id
-        })
+        recency_val = calculate_recency_score(news.get("published"), news.get("created_at"))
+        raw_pop_score = (reads * 1 + likes * 2 + bookmarks * 2)
+        popularity_val = min(raw_pop_score / 20.0, 1.0)
 
-        likes = reaction_collection.count_documents({
-            "news_id": news_id,
-            "reaction": "like"
-        })
+        # Balanced trending score combining normalized engagement and recency/freshness
+        score = popularity_val * 0.50 + recency_val * 0.50
 
-        dislikes = reaction_collection.count_documents({
-            "news_id": news_id,
-            "reaction": "dislike"
-        })
-
-        freshness_score = calculate_freshness_score(news.get("created_at"))
-
-        score = (
-            reads * 0.4 +
-            likes * 0.3 +
-            bookmarks * 0.2 +
-            freshness_score * 0.1
-        )
+        created_at_val = news.get("created_at")
+        if isinstance(created_at_val, datetime):
+            created_at_val = created_at_val.isoformat()
 
         trending.append({
             "_id": str(news_id),
             "title": news.get("title", ""),
+            "content": news.get("content", ""),
             "category": news.get("category", ""),
             "author": news.get("author", ""),
+            "source": news.get("source", ""),
             "image_url": news.get("image_url", ""),
+            "published": news.get("published"),
+            "created_at": created_at_val,
             "reads": reads,
             "bookmarks": bookmarks,
             "likes": likes,

@@ -1,0 +1,111 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+:root {
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html { scroll-behavior: smooth; }
+
+html, body, #root {
+  min-height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  min-width: 320px;
+  font-family: "Inter", ui-sans-serif, system-ui, -apple-system, sans-serif;
+}
+
+a { color: inherit; text-decoration: none; }
+
+/* Editorial serif for article body */
+.signal-editorial {
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 1.125rem;
+  line-height: 1.75;
+  letter-spacing: 0.005em;
+}
+
+/* Signal editorial headline — serif for lead story */
+.signal-headline {
+  font-family: Georgia, "Times New Roman", serif;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.18;
+}
+
+/* Reading progress bar at top */
+#signal-progress {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 2px;
+  background: #00C2E0;
+  z-index: 9999;
+  transition: width 80ms linear;
+  pointer-events: none;
+}
+
+/* Signal Edge — left recommendation bar */
+.signal-edge {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 3px;
+  background: #00C2E0;
+  border-radius: 0 0 2px 2px;
+  transition: height 220ms ease;
+}
+
+/* Signal Edge — mobile top bar */
+@media (max-width: 767px) {
+  .signal-edge {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 3px !important;
+    border-radius: 0;
+  }
+}
+
+/* Smooth skeleton animation override */
+@keyframes signal-shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+/* Focus visible styles */
+:focus-visible {
+  outline: 2px solid #00C2E0;
+  outline-offset: 2px;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(128, 128, 128, 0.3); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(128, 128, 128, 0.5); }
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  *, ::before, ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+
+  #signal-progress { transition: none; }
+  .signal-edge { transition: none; }
+}
+
+/* Bottom nav safe area for mobile */
+.signal-bottom-nav-offset {
+  padding-bottom: calc(56px + env(safe-area-inset-bottom, 0px));
+}

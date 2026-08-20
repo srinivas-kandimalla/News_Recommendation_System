@@ -24,14 +24,17 @@ def get_admin_dashboard():
         "reaction": "dislike"
     })
 
-    # Count news by category
-    category_stats = {}
-
-    for news in news_collection.find():
-
-        category = news.get("category", "Unknown")
-
-        category_stats[category] = category_stats.get(category, 0) + 1
+    # Count news by category using MongoDB aggregation pipeline
+    category_pipeline = [
+        {
+            "$group": {
+                "_id": {"$ifNull": ["$category", "Unknown"]},
+                "count": {"$sum": 1}
+            }
+        }
+    ]
+    category_results = list(news_collection.aggregate(category_pipeline))
+    category_stats = {item["_id"]: item["count"] for item in category_results}
 
     most_popular_category = (
         max(category_stats, key=category_stats.get)

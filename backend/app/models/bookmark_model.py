@@ -1,3 +1,1 @@
-from app.database.db import db
-
-bookmark_collection = db["bookmarks"]
+from app.database.db import bookmark_collection

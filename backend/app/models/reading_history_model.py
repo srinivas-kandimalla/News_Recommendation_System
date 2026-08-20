@@ -1,3 +1,1 @@
-from app.database.db import db
-
-reading_history_collection = db["reading_history"]
+from app.database.db import reading_history_collection

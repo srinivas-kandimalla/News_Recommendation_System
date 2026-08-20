@@ -3,9 +3,13 @@ from bson.errors import InvalidId
 import numpy as np
 
 from app.models.news_model import news_collection
+from app.models.reading_history_model import reading_history_collection
+from app.models.bookmark_model import bookmark_collection
+from app.models.reaction_model import reaction_collection
 
 from app.services.reading_history_service import get_user_read_news
 from app.services.analytics_service import get_user_analytics
+from app.services.trending_service import get_trending_news
 
 from app.ai.similarity_service import calculate_similarity
 from app.ai.scoring_service import (
@@ -87,7 +91,7 @@ def get_recommendations(news_id, top_k=5):
 
             "image_url": news.get("image_url", ""),
 
-            "created_at": news.get("created_at"),
+            "created_at": news.get("published") or news.get("created_at"),
 
             "semantic_score": round(
                 semantic_score,
@@ -114,6 +118,40 @@ def get_recommendations(news_id, top_k=5):
     }
 
 
+def apply_diversity_filter(recommendations, top_k):
+    filtered_recommendations = []
+    category_counts = {}
+    source_counts = {}
+
+    # Pass 1: Strict diversity caps (max 2 per category, max 2 per source)
+    for item in recommendations:
+        category = item.get("category", "")
+        source = item.get("source", "")
+
+        cat_count = category_counts.get(category, 0)
+        src_count = source_counts.get(source, 0)
+
+        if cat_count < 2 and src_count < 2:
+            filtered_recommendations.append(item)
+            category_counts[category] = cat_count + 1
+            source_counts[source] = src_count + 1
+
+            if len(filtered_recommendations) == top_k:
+                break
+
+    # Pass 2: Fill top_k slots if diversity caps restricted output
+    if len(filtered_recommendations) < top_k:
+        added_ids = {r["_id"] for r in filtered_recommendations}
+        for item in recommendations:
+            if item["_id"] not in added_ids:
+                filtered_recommendations.append(item)
+                added_ids.add(item["_id"])
+                if len(filtered_recommendations) == top_k:
+                    break
+
+    return filtered_recommendations
+
+
 # =====================================================
 # Personalized Recommendation
 # =====================================================
@@ -125,31 +163,60 @@ def get_personalized_recommendations(
 
     read_news_ids = get_user_read_news(user_id)
 
+    # Cold-Start Fallback: If user has zero reading history, return trending news
     if not read_news_ids:
+        trending_res = get_trending_news(top_k=top_k * 4)
+        if trending_res.get("success") and trending_res.get("trending_news"):
+            cold_start_candidates = []
+            for item in trending_res["trending_news"]:
+                recency_val = calculate_recency_score(item.get("published"), item.get("created_at"))
+                reads_val = item.get("reads", 0)
+                likes_val = item.get("likes", 0)
+                bm_val = item.get("bookmarks", 0)
+                raw_pop = reads_val * 1 + likes_val * 2 + bm_val * 2
+                popularity_val = min(raw_pop / 20.0, 1.0)
+                pop_val = item.get("trending_score", 0.0)
 
-        return {
+                created_at_date = item.get("published") or item.get("created_at")
+                if hasattr(created_at_date, "isoformat"):
+                    created_at_date = created_at_date.isoformat()
 
-            "success": False,
+                cold_start_candidates.append({
+                    "_id": str(item.get("_id")),
+                    "title": item.get("title", ""),
+                    "content": item.get("content", ""),
+                    "category": item.get("category", ""),
+                    "author": item.get("author", ""),
+                    "source": item.get("source", ""),
+                    "image_url": item.get("image_url", ""),
+                    "created_at": created_at_date,
+                    "semantic_score": 0.0,
+                    "recency_score": round(recency_val, 4),
+                    "popularity_score": round(popularity_val, 4),
+                    "interest_score": 0.0,
+                    "hybrid_score": round(pop_val, 4),
+                    "reason": "Recommended because these are currently trending."
+                })
 
-            "message": "No reading history found",
-
-            "status_code": 404
-
-        }
+            filtered_recs = apply_diversity_filter(cold_start_candidates, top_k)
+            return {
+                "success": True,
+                "count": len(filtered_recs),
+                "recommendations": filtered_recs,
+                "status_code": 200
+            }
 
     user_embeddings = []
 
-    for news_id in read_news_ids:
+    if read_news_ids:
+        read_articles = news_collection.find(
+            {"_id": {"$in": read_news_ids}},
+            projection={"embedding": 1}
+        )
 
-        news = news_collection.find_one({
-            "_id": news_id
-        })
-
-        if news and "embedding" in news:
-
-            user_embeddings.append(
-                news["embedding"]
-            )
+        for news in read_articles:
+            if news and "embedding" in news:
+                user_embeddings.append(news["embedding"])
 
     if not user_embeddings:
 
@@ -183,6 +250,29 @@ def get_personalized_recommendations(
             "analytics"
         ].get("favorite_author")
 
+    # Pre-aggregate popularity counts for candidate scoring
+    read_counts = {
+        item["_id"]: item["count"]
+        for item in reading_history_collection.aggregate([
+            {"$group": {"_id": "$news_id", "count": {"$sum": 1}}}
+        ])
+    }
+
+    like_counts = {
+        item["_id"]: item["count"]
+        for item in reaction_collection.aggregate([
+            {"$match": {"reaction": "like"}},
+            {"$group": {"_id": "$news_id", "count": {"$sum": 1}}}
+        ])
+    }
+
+    bookmark_counts = {
+        item["_id"]: item["count"]
+        for item in bookmark_collection.aggregate([
+            {"$group": {"_id": "$news_id", "count": {"$sum": 1}}}
+        ])
+    }
+
     recommendations = []
 
     unread_news = news_collection.find({
@@ -206,11 +296,15 @@ def get_personalized_recommendations(
         )
 
         recency_score = calculate_recency_score(
+            news.get("published"),
             news.get("created_at")
         )
 
         popularity_score = calculate_popularity_score(
-            news["_id"]
+            news["_id"],
+            reads=read_counts.get(news["_id"], 0),
+            likes=like_counts.get(news["_id"], 0),
+            bookmarks=bookmark_counts.get(news["_id"], 0)
         )
 
         interest_score = calculate_interest_score(
@@ -259,7 +353,7 @@ def get_personalized_recommendations(
 
             "image_url": news.get("image_url", ""),
 
-            "created_at": news.get("created_at"),
+            "created_at": (news.get("published") or news.get("created_at")).isoformat() if hasattr(news.get("published") or news.get("created_at"), "isoformat") else (news.get("published") or news.get("created_at")),
 
             "semantic_score": round(
                 semantic_score,
@@ -295,24 +389,7 @@ def get_personalized_recommendations(
         reverse=True
     )
 
-    filtered_recommendations = []
-    category_counts = {}
-    source_counts = {}
-
-    for item in recommendations:
-        category = item.get("category", "")
-        source = item.get("source", "")
-
-        cat_count = category_counts.get(category, 0)
-        src_count = source_counts.get(source, 0)
-
-        if cat_count < 2 and src_count < 2:
-            filtered_recommendations.append(item)
-            category_counts[category] = cat_count + 1
-            source_counts[source] = src_count + 1
-
-            if len(filtered_recommendations) == top_k:
-                break
+    filtered_recommendations = apply_diversity_filter(recommendations, top_k)
 
     return {
 

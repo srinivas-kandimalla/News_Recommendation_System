@@ -1,5 +1,5 @@
 from flask import request, jsonify
-from app.utils.jwt_helper import token_required
+from app.utils.jwt_helper import token_required, admin_required
 
 from app.services.news_service import (
     create_news,
@@ -15,7 +15,7 @@ from app.services.news_service import (
 # Create News
 # ======================================================
 
-@token_required
+@admin_required
 def add_news(current_user):
 
     news_data = request.get_json()
@@ -66,7 +66,7 @@ def get_single_news(id):
 # Update News
 # ======================================================
 
-@token_required
+@admin_required
 def edit_news(current_user, id):
 
     news_data = request.get_json()
@@ -82,7 +82,7 @@ def edit_news(current_user, id):
 # Delete News
 # ======================================================
 
-@token_required
+@admin_required
 def remove_news(current_user, id):
 
     result = delete_news(id)
@@ -90,6 +90,7 @@ def remove_news(current_user, id):
     status_code = result.pop("status_code")
 
     return jsonify(result), status_code
+
 
 
 # ======================================================

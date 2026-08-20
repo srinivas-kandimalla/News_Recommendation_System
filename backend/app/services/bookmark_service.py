@@ -73,28 +73,32 @@ def get_bookmarks(user_id):
             "status_code": 400
         }
 
-    bookmarks = bookmark_collection.find({"user_id": user_object_id})
+    bookmarks = list(bookmark_collection.find({"user_id": user_object_id}))
+    news_ids = [b["news_id"] for b in bookmarks if "news_id" in b]
 
     results = []
 
-    for bookmark in bookmarks:
+    if news_ids:
+        fetched_news = news_collection.find(
+            {"_id": {"$in": news_ids}},
+            projection={"embedding": 0}
+        )
+        news_map = {n["_id"]: n for n in fetched_news}
 
-        news = news_collection.find_one({
-            "_id": bookmark["news_id"]
-        })
-
-        if news:
-
-            results.append({
-                "_id": str(news["_id"]),
-                "title": news.get("title", ""),
-                "content": news.get("content", ""),
-                "category": news.get("category", ""),
-                "author": news.get("author", ""),
-                "source": news.get("source", ""),
-                "image_url": news.get("image_url", ""),
-                "created_at": news.get("created_at")
-            })
+        # Preserve exact bookmark order
+        for bookmark in bookmarks:
+            news = news_map.get(bookmark["news_id"])
+            if news:
+                results.append({
+                    "_id": str(news["_id"]),
+                    "title": news.get("title", ""),
+                    "content": news.get("content", ""),
+                    "category": news.get("category", ""),
+                    "author": news.get("author", ""),
+                    "source": news.get("source", ""),
+                    "image_url": news.get("image_url", ""),
+                    "created_at": news.get("created_at")
+                })
 
     return {
         "success": True,

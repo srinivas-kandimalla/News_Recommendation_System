@@ -30,9 +30,17 @@ def create_user(user_data):
             "message": "Password is required"
         }
 
+    if len(user_data["password"]) < 8:
+        return {
+            "success": False,
+            "message": "Password must be at least 8 characters long"
+        }
+
+    email = user_data["email"].strip().lower()
+
     # Check if email already exists
     existing_user = users_collection.find_one(
-        {"email": user_data["email"]}
+        {"email": email}
     )
 
     if existing_user:
@@ -41,15 +49,17 @@ def create_user(user_data):
             "message": "Email already exists"
         }
 
-    # Create a copy of request data
-    new_user = user_data.copy()
-
     # Hash password
-    password = new_user["password"].encode("utf-8")
-    hashed_password = bcrypt.hashpw(password, bcrypt.gensalt())
+    password = user_data["password"].encode("utf-8")
+    hashed_password = bcrypt.hashpw(password, bcrypt.gensalt()).decode("utf-8")
 
-    # Store hashed password
-    new_user["password"] = hashed_password.decode("utf-8")
+    # Construct explicit user object to prevent mass assignment vulnerability
+    new_user = {
+        "name": user_data["name"].strip(),
+        "email": email,
+        "password": hashed_password,
+        "role": "user"
+    }
 
     # Insert into MongoDB
     result = users_collection.insert_one(new_user)
@@ -79,9 +89,11 @@ def login_user(user_data):
             "message": "Password is required"
         }
 
+    email = user_data["email"].strip().lower()
+
     # Find user by email
     user = users_collection.find_one(
-        {"email": user_data["email"]}
+        {"email": email}
     )
 
     if not user:

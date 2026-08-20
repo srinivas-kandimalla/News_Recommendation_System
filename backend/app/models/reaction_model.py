@@ -1,3 +1,1 @@
-from app.database.db import db
-
-reaction_collection = db["reactions"]
+from app.database.db import reaction_collection

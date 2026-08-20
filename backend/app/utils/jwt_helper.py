@@ -15,6 +15,7 @@ def generate_token(user):
     payload = {
         "user_id": str(user["_id"]),
         "email": user["email"],
+        "role": user.get("role", "user"),
         "exp": datetime.utcnow() + timedelta(hours=24)
     }
 
@@ -86,3 +87,69 @@ def token_required(f):
         return f(current_user, *args, **kwargs)
 
     return decorated
+
+
+def admin_required(f):
+    """
+    Verify JWT token and check for admin privileges before allowing access.
+    """
+    @wraps(f)
+    def decorated(*args, **kwargs):
+
+        auth_header = request.headers.get("Authorization")
+
+        if not auth_header:
+            return jsonify({
+                "success": False,
+                "message": "Token is missing"
+            }), 401
+
+        try:
+            if auth_header.startswith("Bearer "):
+                token = auth_header.split(" ")[1]
+            else:
+                token = auth_header
+
+            payload = jwt.decode(
+                token,
+                Config.SECRET_KEY,
+                algorithms=["HS256"]
+            )
+
+            current_user = users_collection.find_one({
+                "_id": ObjectId(payload["user_id"])
+            })
+
+            if not current_user:
+                return jsonify({
+                    "success": False,
+                    "message": "User not found"
+                }), 404
+
+            if current_user.get("role") != "admin":
+                return jsonify({
+                    "success": False,
+                    "message": "Admin privileges required"
+                }), 403
+
+        except jwt.ExpiredSignatureError:
+            return jsonify({
+                "success": False,
+                "message": "Token has expired"
+            }), 401
+
+        except jwt.InvalidTokenError:
+            return jsonify({
+                "success": False,
+                "message": "Invalid token"
+            }), 401
+
+        except Exception as e:
+            return jsonify({
+                "success": False,
+                "message": str(e)
+            }), 500
+
+        return f(current_user, *args, **kwargs)
+
+    return decorated
