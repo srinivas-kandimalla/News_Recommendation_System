@@ -1,115 +1,113 @@
-import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   Container,
-  Typography,
-  Grid,
-  Card,
-  CardContent,
-  Button,
-  Stack,
   Box,
-  Skeleton,
+  Typography,
   Alert,
-} from "@mui/material";
+  Divider,
+  Stack,
+} from '@mui/material';
+import { useTheme } from '@mui/material/styles';
 
-import TrendingUpIcon from "@mui/icons-material/TrendingUp";
-import WhatshotIcon from "@mui/icons-material/Whatshot";
-
-import { getTrendingNews } from "../services/newsService";
-import NewsCard from "../components/NewsCard";
+import { getTrendingNews, bookmarkNews } from '../services/newsService';
+import { useAuth } from '../context/AuthContext';
+import NewsCard from '../components/common/NewsCard';
+import NewsCardSkeleton from '../components/common/NewsCardSkeleton';
 
 function Trending() {
+  const theme = useTheme();
   const navigate = useNavigate();
+  const { token, isAuthenticated } = useAuth();
+
   const [trendingNews, setTrendingNews] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  useEffect(() => {
-    fetchTrending();
-  }, []);
+  useEffect(() => { fetchTrending(); }, []);
 
   const fetchTrending = async () => {
     try {
       setLoading(true);
-      setError(null);
-      const data = await getTrendingNews();
-
-      if (data.success) {
-        setTrendingNews(data.trending_news || []);
-      } else {
-        setError(data.message || "Failed to load trending news.");
-      }
-    } catch (err) {
-      console.error(err);
-      setError("Unable to fetch trending news. Please try again later.");
+      const res = await getTrendingNews();
+      if (res.success) setTrendingNews(res.trending_news || []);
+      else setError(res.message || 'Failed to load trending news.');
+    } catch {
+      setError('Unable to load trending news.');
     } finally {
       setLoading(false);
     }
   };
 
+  const handleBookmark = async (item) => {
+    if (!isAuthenticated) { navigate('/login'); return; }
+    try { await bookmarkNews(item._id, token); } catch { /* silent */ }
+  };
+
+  const sectionLabel = {
+    fontFamily: '"Inter", sans-serif',
+    fontWeight: 600,
+    fontSize: '0.6875rem',
+    letterSpacing: '0.1em',
+    textTransform: 'uppercase',
+    color: theme.palette.text.secondary,
+  };
+
   return (
-    <Container maxWidth="lg" sx={{ mt: 5, mb: 6 }}>
-      <Stack direction="row" alignItems="center" spacing={1} sx={{ mb: 4 }}>
-        <WhatshotIcon color="secondary" sx={{ fontSize: 36 }} />
-        <Typography variant="h4" fontWeight="bold">
-          Trending News
-        </Typography>
-      </Stack>
+    <Box sx={{ backgroundColor: theme.palette.background.default, minHeight: '100vh', pb: 6 }}>
+      <Container maxWidth="md" sx={{ pt: { xs: 3, md: 4 }, px: { xs: 2, md: 3 } }}>
 
-      {error && (
-        <Alert severity="error" sx={{ mb: 4 }}>
-          {error}
-        </Alert>
-      )}
-
-      <Grid container spacing={3}>
-        {loading
-          ? Array.from(new Array(6)).map((_, index) => (
-              <Grid xs={12} sm={6} md={4} key={index}>
-                <Card sx={{ height: "100%" }}>
-                  <Skeleton variant="rectangular" height={200} />
-                  <CardContent>
-                    <Skeleton variant="text" width="60%" height={24} sx={{ mb: 1 }} />
-                    <Skeleton variant="text" width="90%" height={32} />
-                    <Skeleton variant="text" width="40%" height={20} sx={{ mb: 2 }} />
-                    <Skeleton variant="rectangular" height={40} />
-                  </CardContent>
-                </Card>
-              </Grid>
-            ))
-          : trendingNews.map((news) => (
-              <Grid xs={12} sm={6} md={4} key={news._id}>
-                <NewsCard news={news} showTrendingMetrics />
-              </Grid>
-            ))}
-      </Grid>
-
-      {!loading && !error && trendingNews.length === 0 && (
-        <Box
-          sx={{
-            textAlign: "center",
-            py: 8,
-            px: 2,
-            backgroundColor: "background.paper",
-            borderRadius: 2,
-            boxShadow: 1,
-            mt: 2,
-          }}
-        >
-          <TrendingUpIcon sx={{ fontSize: 60, color: "text.secondary", mb: 2 }} />
-          <Typography variant="h6" color="text.secondary" gutterBottom>
-            No Trending Articles Yet
+        {/* Header */}
+        <Box sx={{ mb: 3 }}>
+          <Typography
+            variant="h3"
+            component="h1"
+            sx={{
+              fontFamily: '"Playfair Display", Georgia, serif',
+              fontWeight: 700,
+              color: theme.palette.text.primary,
+              mb: 0.5,
+            }}
+          >
+            Trending
           </Typography>
-          <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-            Check back later after articles receive reads, likes, and bookmarks!
+          <Typography variant="body2" color="text.secondary">
+            The most read and engaged stories right now.
           </Typography>
-          <Button variant="contained" onClick={() => navigate("/")}>
-            Browse News
-          </Button>
         </Box>
-      )}
-    </Container>
+
+        <Divider sx={{ mb: 3 }} />
+        <Typography sx={{ ...sectionLabel, mb: 0 }}>Most Read</Typography>
+
+        {error && <Alert severity="error" sx={{ mt: 2 }}>{error}</Alert>}
+
+        {/* Editorial ranked list */}
+        <Box sx={{ mt: 0 }}>
+          {loading ? (
+            Array.from({ length: 8 }).map((_, i) => (
+              <NewsCardSkeleton key={i} variant="compact" />
+            ))
+          ) : trendingNews.length > 0 ? (
+            trendingNews.map((item, idx) => (
+              <NewsCard
+                key={item._id || idx}
+                news={item}
+                variant="compact"
+                rankIndex={idx + 1}
+                onBookmark={handleBookmark}
+                onClick={() => navigate(`/news/${item._id}`)}
+              />
+            ))
+          ) : (
+            <Box sx={{ py: 6, textAlign: 'center' }}>
+              <Typography variant="body1" color="text.secondary">
+                No trending stories yet. Start reading and the algorithm will surface popular articles.
+              </Typography>
+            </Box>
+          )}
+        </Box>
+      </Container>
+    </Box>
   );
 }
 

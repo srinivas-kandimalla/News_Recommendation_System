@@ -1,0 +1,33 @@
+=================================================================
+  NEXORA STEP 8D — EQUIVALENCE VALIDATION
+  Original evaluator.py  vs  evaluator_fast.py
+  Sample: 20 users, seed=42, tolerance=1e-06
+=================================================================
+
+[1/4] Both evaluators imported successfully.
+[2/4] Cache loaded: 51282 articles.
+[3/4] Behavior data loaded. Selected 20 users (seed=42).
+
+[4/4] Running equivalence comparison...
+
+  Total impressions compared : 42
+  Total candidates covered   : 2000
+
+  Checking ranking order agreement (exact top-K ID match)...
+
+=================================================================
+  EQUIVALENCE VALIDATION RESULTS
+=================================================================
+  MODEL A: Baseline Mean             : PASS  (tested 42 impressions)
+  MODEL B: Long+Short Split          : PASS  (tested 42 impressions)
+  MODEL C: Softmax Attention         : PASS  (tested 42 impressions)
+  MODEL D: Context Fusion            : PASS  (tested 42 impressions)
+  MODEL E: Final Nexora System       : PASS  (tested 42 impressions)
+
+-----------------------------------------------------------------
+  OVERALL: ALL 5 MODELS PASS
+  The optimized evaluator is mathematically equivalent.
+  SAFE TO PROCEED with full MIND-small benchmark.
+-----------------------------------------------------------------
+
+Full validation log: D:/News_Recommendation_System/backend/evaluation/mind/validation_result.txt

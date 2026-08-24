@@ -1,38 +1,57 @@
 import { createContext, useContext, useEffect, useState } from "react";
+import { jwtDecode } from "jwt-decode";
 
 const AuthContext = createContext();
 
-export function AuthProvider({ children }) {
-  const [token, setToken] = useState(localStorage.getItem("token"));
+const getUserFromToken = (jwtToken) => {
+  if (!jwtToken) return null;
+  try {
+    const decoded = jwtDecode(jwtToken);
+    if (decoded.exp && decoded.exp * 1000 < Date.now()) {
+      console.warn("JWT Token expired, purging from localStorage.");
+      localStorage.removeItem("token");
+      return null;
+    }
+    return {
+      id: decoded.user_id || decoded.sub || decoded.id,
+      name: decoded.name || decoded.username || (decoded.email ? decoded.email.split("@")[0] : "User"),
+      email: decoded.email || "",
+      role: decoded.role || "user",
+    };
+  } catch (err) {
+    console.error("Invalid JWT Token:", err);
+    localStorage.removeItem("token");
+    return null;
+  }
+};
 
-  console.log(
-    "AuthContext RENDER - current state token:",
-    token,
-    "| localStorage token:",
-    localStorage.getItem("token")
-  );
+export function AuthProvider({ children }) {
+  const [token, setToken] = useState(() => localStorage.getItem("token"));
+  const [user, setUser] = useState(() => getUserFromToken(localStorage.getItem("token")));
 
   useEffect(() => {
     const storedToken = localStorage.getItem("token");
-    console.log("AuthContext useEffect - storedToken:", storedToken);
     setToken(storedToken);
+    setUser(getUserFromToken(storedToken));
   }, []);
 
   const login = (jwtToken) => {
-    console.log("AuthContext login() CALLED with jwtToken:", jwtToken);
     localStorage.setItem("token", jwtToken);
     setToken(jwtToken);
+    setUser(getUserFromToken(jwtToken));
   };
 
   const logout = () => {
     localStorage.removeItem("token");
     setToken(null);
+    setUser(null);
   };
 
   return (
     <AuthContext.Provider
       value={{
         token,
+        user,
         isAuthenticated: !!token,
         login,
         logout,

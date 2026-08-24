@@ -36,6 +36,7 @@ def get_news():
 
     page = request.args.get("page", default=1, type=int)
     limit = request.args.get("limit", default=5, type=int)
+    category = request.args.get("category", default=None, type=str)
 
     # Validation
     if page < 1:
@@ -44,7 +45,7 @@ def get_news():
     if limit < 1:
         limit = 5
 
-    result = get_all_news(page, limit)
+    result = get_all_news(page, limit, category)
 
     return jsonify(result), 200
 

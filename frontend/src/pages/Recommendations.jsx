@@ -5,28 +5,17 @@ import {
   Box,
   Typography,
   Grid,
-  Stack,
-  Skeleton,
   Alert,
-  Button,
-  Chip,
-  Card,
-  CardContent,
+  Divider,
+  Stack,
+  LinearProgress,
 } from '@mui/material';
-import { alpha, useTheme } from '@mui/material/styles';
-import { motion } from 'framer-motion';
-import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
-import SmartToyIcon from '@mui/icons-material/SmartToy';
-import MemoryIcon from '@mui/icons-material/Memory';
-import SpeedIcon from '@mui/icons-material/Speed';
-import CategoryIcon from '@mui/icons-material/Category';
+import { useTheme } from '@mui/material/styles';
 
-import { getPersonalizedRecommendations } from '../services/newsService';
+import { getPersonalizedRecommendations, getAnalytics, bookmarkNews, likeNews } from '../services/newsService';
 import { useAuth } from '../context/AuthContext';
-import RecommendationCard from '../components/common/RecommendationCard';
-import ExplanationCard from '../components/common/ExplanationCard';
-import InsightsWidget from '../components/common/InsightsWidget';
-import StatCard from '../components/common/StatCard';
+import NewsCard from '../components/common/NewsCard';
+import NewsCardSkeleton from '../components/common/NewsCardSkeleton';
 
 function Recommendations() {
   const theme = useTheme();
@@ -34,215 +23,250 @@ function Recommendations() {
   const { token, isAuthenticated } = useAuth();
 
   const [recommendations, setRecommendations] = useState([]);
+  const [analytics, setAnalytics] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    loadRecommendations();
+    if (!token) { setLoading(false); return; }
+    loadData();
   }, [token]);
 
-  const loadRecommendations = async () => {
+  const loadData = async () => {
     try {
       setLoading(true);
-      setError(null);
-      const data = await getPersonalizedRecommendations(token);
-
-      if (data.success) {
-        setRecommendations(data.recommendations || []);
+      const [recRes, analyticsRes] = await Promise.allSettled([
+        getPersonalizedRecommendations(token),
+        getAnalytics(token),
+      ]);
+      if (recRes.status === 'fulfilled' && recRes.value.success) {
+        setRecommendations(recRes.value.recommendations || []);
       } else {
-        setError(data.message || 'Failed to fetch personalized recommendations.');
+        setError(recRes.value?.message || 'Failed to load recommendations.');
+      }
+      if (analyticsRes.status === 'fulfilled' && analyticsRes.value.success) {
+        setAnalytics(analyticsRes.value.analytics);
       }
     } catch (err) {
-      console.error(err);
-      setError('Unable to load recommendations. Please ensure you are signed in.');
+      setError('Unable to load recommendations.');
     } finally {
       setLoading(false);
     }
   };
 
-  return (
-    <Container maxWidth="xl" sx={{ py: 4, px: { xs: 2, md: 4 } }}>
-      {/* ==================================================== */}
-      {/* PAGE HEADER                                          */}
-      {/* ==================================================== */}
-      <motion.div
-        initial={{ opacity: 0, y: 15 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4 }}
-      >
-        <Box
-          sx={{
-            borderRadius: `${theme.shape.borderRadius * 3}px`,
-            p: { xs: 3, md: 4 },
-            mb: 4,
-            background: `linear-gradient(135deg, ${alpha(theme.palette.secondary.main, 0.08)} 0%, ${alpha(
-              theme.palette.primary.main,
-              0.06
-            )} 100%)`,
-            border: `1px solid ${alpha(theme.palette.secondary.main, 0.2)}`,
-            boxShadow: theme.shadows[1],
-          }}
-        >
-          <Stack direction="row" alignItems="center" spacing={1} sx={{ mb: 1 }}>
-            <Chip
-              icon={<AutoAwesomeIcon sx={{ fontSize: 14 }} />}
-              label="AI Neural Engine"
-              size="small"
-              sx={{
-                backgroundColor: theme.palette.secondary.main,
-                color: '#FFFFFF',
-                fontWeight: 700,
-                fontSize: '0.75rem',
-              }}
-            />
-          </Stack>
+  const handleBookmark = async (item) => {
+    if (!isAuthenticated) { navigate('/login'); return; }
+    try { await bookmarkNews(item._id, token); } catch { /* silent */ }
+  };
+  const handleLike = async (item) => {
+    if (!isAuthenticated) { navigate('/login'); return; }
+    try { await likeNews(item._id, token); } catch { /* silent */ }
+  };
 
+  const sectionLabel = {
+    fontFamily: '"Inter", sans-serif',
+    fontWeight: 600,
+    fontSize: '0.6875rem',
+    letterSpacing: '0.1em',
+    textTransform: 'uppercase',
+    color: theme.palette.text.secondary,
+  };
+
+  // Build reading pulse from analytics.category_distribution or top categories
+  const categoryDist = analytics?.category_distribution
+    ? Object.entries(analytics.category_distribution)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 4)
+    : [];
+  const totalReads = categoryDist.reduce((sum, [, v]) => sum + v, 0);
+
+  return (
+    <Box sx={{ backgroundColor: theme.palette.background.default, minHeight: '100vh', pb: 6 }}>
+      <Container maxWidth="lg" sx={{ pt: { xs: 3, md: 4 }, px: { xs: 2, md: 3 } }}>
+
+        {/* Header */}
+        <Box sx={{ mb: 3 }}>
           <Typography
             variant="h3"
             component="h1"
             sx={{
-              fontFamily: theme.typography.h1.fontFamily,
-              fontWeight: 800,
-              fontSize: { xs: '1.8rem', md: '2.4rem' },
+              fontFamily: '"Playfair Display", Georgia, serif',
+              fontWeight: 700,
               color: theme.palette.text.primary,
-              mb: 1,
+              mb: 0.5,
             }}
           >
-            Personalized AI Recommendations
+            Picked for you
           </Typography>
-
-          <Typography variant="body1" color="text.secondary" sx={{ maxWidth: 640, mb: 3 }}>
-            Articles tailored to your reading profile using high-dimensional sentence transformers, recency weighting, and engagement scoring.
+          <Typography variant="body2" color="text.secondary">
+            Stories selected around your interests.
           </Typography>
+        </Box>
 
-          {/* AI Metric Highlights */}
-          <Grid container spacing={2}>
-            <Grid xs={12} sm={3}>
-              <StatCard
-                icon={MemoryIcon}
-                value="384d"
-                label="Semantic Vectors"
-                iconColor="secondary"
-              />
-            </Grid>
-            <Grid xs={12} sm={3}>
-              <StatCard
-                icon={SpeedIcon}
-                value="94%"
-                label="Avg Match Score"
-                iconColor="success"
-              />
-            </Grid>
-            <Grid xs={12} sm={3}>
-              <StatCard
-                icon={CategoryIcon}
-                value="Technology"
-                label="Favorite Topic"
-                iconColor="primary"
-              />
-            </Grid>
-            <Grid xs={12} sm={3}>
-              <StatCard
-                icon={AutoAwesomeIcon}
-                value="High"
-                label="Confidence Level"
-                iconColor="warning"
-              />
+        {error && <Alert severity="error" sx={{ mb: 3 }}>{error}</Alert>}
+
+        <Grid container spacing={5}>
+          {/* Left: recommendations feed */}
+          <Grid item xs={12} md={8}>
+            <Typography sx={{ ...sectionLabel, mb: 2 }}>Your Feed</Typography>
+
+            <Grid container spacing={3}>
+              {loading ? (
+                Array.from({ length: 6 }).map((_, i) => (
+                  <Grid item xs={12} sm={6} key={i}>
+                    <NewsCardSkeleton variant="standard" />
+                  </Grid>
+                ))
+              ) : recommendations.length > 0 ? (
+                recommendations.map((item) => (
+                  <Grid item xs={12} sm={6} key={item._id}>
+                    <NewsCard
+                      news={item}
+                      variant="standard"
+                      showReason={true}
+                      onBookmark={handleBookmark}
+                      onLike={handleLike}
+                      onClick={() => navigate(`/news/${item._id}`)}
+                    />
+                  </Grid>
+                ))
+              ) : !loading && (
+                <Grid item xs={12}>
+                  <Box sx={{ py: 6, textAlign: 'center' }}>
+                    <Typography variant="h5" sx={{ fontFamily: '"Playfair Display", Georgia, serif', fontWeight: 700, mb: 1 }}>
+                      No recommendations yet
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+                      Read a few articles on the home feed and Nexora will learn your interests.
+                    </Typography>
+                    <Box
+                      onClick={() => navigate('/')}
+                      sx={{
+                        display: 'inline-block',
+                        px: 3,
+                        py: 1.25,
+                        border: `1px solid ${theme.palette.text.primary}`,
+                        borderRadius: 1,
+                        cursor: 'pointer',
+                        fontFamily: '"Inter", sans-serif',
+                        fontWeight: 500,
+                        fontSize: '0.875rem',
+                        color: theme.palette.text.primary,
+                        '&:hover': { backgroundColor: theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.04)' },
+                      }}
+                    >
+                      Browse news
+                    </Box>
+                  </Box>
+                </Grid>
+              )}
             </Grid>
           </Grid>
-        </Box>
-      </motion.div>
 
-      {/* Error Alert */}
-      {error && (
-        <Alert severity="error" sx={{ mb: 4, borderRadius: `${theme.shape.borderRadius * 2}px` }}>
-          {error}
-        </Alert>
-      )}
+          {/* Right: reading pulse sidebar */}
+          <Grid item xs={12} md={4}>
+            <Box sx={{ position: { md: 'sticky' }, top: 72 }}>
+              <Typography sx={{ ...sectionLabel, mb: 2 }}>Your Reading Pulse</Typography>
 
-      {/* ==================================================== */}
-      {/* MAIN CONTENT GRID                                    */}
-      {/* ==================================================== */}
-      <Grid container spacing={3.5}>
-        {/* Left Recommendations Cards (Column 1 & 2: lg={8.5}) */}
-        <Grid xs={12} lg={8.5}>
-          <Grid container spacing={3}>
-            {loading ? (
-              Array.from(new Array(6)).map((_, index) => (
-                <Grid xs={12} sm={6} key={index}>
-                  <Card sx={{ height: 380, borderRadius: 3 }}>
-                    <Skeleton variant="rectangular" height={180} />
-                    <CardContent sx={{ p: 2 }}>
-                      <Skeleton variant="text" width="40%" height={20} sx={{ mb: 1 }} />
-                      <Skeleton variant="text" width="90%" height={28} />
-                      <Skeleton variant="text" width="60%" height={20} />
-                    </CardContent>
-                  </Card>
-                </Grid>
-              ))
-            ) : recommendations.length > 0 ? (
-              recommendations.map((item, index) => (
-                <Grid xs={12} sm={6} key={item._id || index}>
-                  <RecommendationCard
-                    news={item}
-                    onClick={() => navigate(`/news/${item._id}`)}
-                  />
-                </Grid>
-              ))
-            ) : (
-              <Grid xs={12}>
+              {analytics ? (
                 <Box
                   sx={{
-                    textAlign: 'center',
-                    py: 8,
-                    px: 3,
-                    backgroundColor: theme.palette.background.paper,
-                    borderRadius: `${theme.shape.borderRadius * 2.5}px`,
                     border: `1px solid ${theme.palette.divider}`,
+                    borderRadius: 1,
+                    p: 2.5,
                   }}
                 >
-                  <SmartToyIcon sx={{ fontSize: 64, color: 'text.secondary', mb: 2 }} />
-                  <Typography variant="h6" color="text.primary" fontWeight={700} gutterBottom>
-                    No Personalized Recommendations Yet
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary" sx={{ maxWidth: 460, mx: 'auto', mb: 3 }}>
-                    Read a few news articles first so the AI recommendation engine can calculate your vector profile!
-                  </Typography>
-                  <Button
-                    variant="contained"
-                    onClick={() => navigate('/')}
-                    sx={{
-                      borderRadius: `${theme.shape.borderRadius * 2}px`,
-                      px: 3,
-                      py: 1,
-                      textTransform: 'none',
-                      fontWeight: 600,
-                    }}
-                  >
-                    Browse News Feed
-                  </Button>
+                  {/* Stats row */}
+                  <Grid container spacing={2} sx={{ mb: 2.5 }}>
+                    {[
+                      { label: 'Articles read', value: analytics.total_articles_read ?? '—' },
+                      { label: 'Bookmarks', value: analytics.total_bookmarks ?? '—' },
+                      { label: 'Likes', value: analytics.total_likes ?? '—' },
+                    ].map(({ label, value }) => (
+                      <Grid item xs={4} key={label}>
+                        <Typography sx={{
+                          fontFamily: '"Playfair Display", Georgia, serif',
+                          fontWeight: 700,
+                          fontSize: '1.5rem',
+                          color: theme.palette.text.primary,
+                          lineHeight: 1,
+                          mb: 0.25,
+                        }}>
+                          {value}
+                        </Typography>
+                        <Typography variant="caption" color="text.secondary">{label}</Typography>
+                      </Grid>
+                    ))}
+                  </Grid>
+
+                  <Divider sx={{ mb: 2 }} />
+
+                  {/* Category breakdown */}
+                  {categoryDist.length > 0 ? (
+                    <Stack spacing={1.5}>
+                      {categoryDist.map(([cat, count]) => {
+                        const pct = totalReads > 0 ? Math.round((count / totalReads) * 100) : 0;
+                        return (
+                          <Box key={cat}>
+                            <Stack direction="row" justifyContent="space-between" sx={{ mb: 0.5 }}>
+                              <Typography variant="caption" sx={{ fontFamily: '"Inter", sans-serif', fontWeight: 500, color: theme.palette.text.primary }}>
+                                {cat}
+                              </Typography>
+                              <Typography variant="caption" color="text.secondary">{pct}%</Typography>
+                            </Stack>
+                            <LinearProgress
+                              variant="determinate"
+                              value={pct}
+                              sx={{
+                                height: 3,
+                                borderRadius: 0,
+                                backgroundColor: theme.palette.divider,
+                                '& .MuiLinearProgress-bar': {
+                                  backgroundColor: theme.palette.text.primary,
+                                  borderRadius: 0,
+                                },
+                              }}
+                            />
+                          </Box>
+                        );
+                      })}
+                    </Stack>
+                  ) : (
+                    <Typography variant="caption" color="text.secondary">
+                      Start reading to build your interest profile.
+                    </Typography>
+                  )}
+
+                  {analytics.favorite_category && (
+                    <>
+                      <Divider sx={{ my: 2 }} />
+                      <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.25 }}>
+                        Favourite category
+                      </Typography>
+                      <Typography sx={{ fontFamily: '"Playfair Display", serif', fontWeight: 700, color: theme.palette.text.primary }}>
+                        {analytics.favorite_category}
+                      </Typography>
+                    </>
+                  )}
                 </Box>
-              </Grid>
-            )}
+              ) : (
+                <Box
+                  sx={{
+                    border: `1px solid ${theme.palette.divider}`,
+                    borderRadius: 1,
+                    p: 2.5,
+                  }}
+                >
+                  <Typography variant="body2" color="text.secondary">
+                    Your reading stats will appear here as you explore Nexora.
+                  </Typography>
+                </Box>
+              )}
+            </Box>
           </Grid>
         </Grid>
-
-        {/* Right Sidebar Widget (Column 3: lg={3.5}) */}
-        <Grid xs={12} lg={3.5}>
-          <Stack spacing={3} sx={{ position: { lg: 'sticky' }, top: 90 }}>
-            {/* Explanation Widget */}
-            <ExplanationCard
-              title="Hybrid Scoring Model"
-              reason="Hybrid Score = (Semantic Vector × 60%) + (Recency × 20%) + (Popularity × 10%) + (Category Affinity × 10%)."
-              matchScore={96}
-            />
-
-            {/* Reading Insights */}
-            <InsightsWidget />
-          </Stack>
-        </Grid>
-      </Grid>
-    </Container>
+      </Container>
+    </Box>
   );
 }
 

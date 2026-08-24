@@ -1,204 +1,188 @@
-import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
-
+import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   Container,
+  Box,
   Typography,
   Grid,
-  Card,
-  CardContent,
-  Button,
-  Box,
-  Skeleton,
+  Alert,
+  Divider,
   Dialog,
   DialogTitle,
   DialogContent,
   DialogContentText,
-  DialogActions as MuiDialogActions,
+  DialogActions,
+  Button,
   Snackbar,
-  Alert,
-} from "@mui/material";
+} from '@mui/material';
+import { useTheme } from '@mui/material/styles';
 
-import BookmarkRemoveIcon from "@mui/icons-material/BookmarkRemove";
-
-import {
-  getBookmarks,
-  removeBookmark,
-} from "../services/newsService";
-
-import { useAuth } from "../context/AuthContext";
-import NewsCard from "../components/NewsCard";
+import { getBookmarks, removeBookmark } from '../services/newsService';
+import { useAuth } from '../context/AuthContext';
+import NewsCard from '../components/common/NewsCard';
+import NewsCardSkeleton from '../components/common/NewsCardSkeleton';
 
 function Bookmarks() {
+  const theme = useTheme();
   const navigate = useNavigate();
   const { token } = useAuth();
 
   const [bookmarks, setBookmarks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [confirmId, setConfirmId] = useState(null);
+  const [toast, setToast] = useState({ open: false, message: '', severity: 'success' });
 
-  // Dialog State
-  const [confirmDialog, setConfirmDialog] = useState({
-    open: false,
-    newsId: null,
-  });
-
-  // Snackbar Toast State
-  const [toast, setToast] = useState({
-    open: false,
-    severity: "success",
-    message: "",
-  });
-
-  const showToast = (message, severity = "success") => {
-    setToast({ open: true, message, severity });
-  };
+  const showToast = (message, severity = 'success') => setToast({ open: true, message, severity });
 
   useEffect(() => {
-    loadBookmarks();
-  }, []);
+    if (token) loadBookmarks();
+    else setLoading(false);
+  }, [token]);
 
   const loadBookmarks = async () => {
     try {
       setLoading(true);
-      setError(null);
-      const data = await getBookmarks(token);
-
-      if (data.success) {
-        setBookmarks(data.bookmarks || []);
-      } else {
-        setError(data.message || "Failed to load bookmarks.");
-      }
-    } catch (err) {
-      console.error(err);
-      setError("Unable to load bookmarks. Please try again.");
+      const res = await getBookmarks(token);
+      if (res.success) setBookmarks(res.bookmarks || []);
+      else setError(res.message || 'Failed to load bookmarks.');
+    } catch {
+      setError('Unable to load bookmarks.');
     } finally {
       setLoading(false);
     }
   };
 
-  const openDeleteDialog = (id) => {
-    setConfirmDialog({ open: true, newsId: id });
-  };
-
-  const closeDeleteDialog = () => {
-    setConfirmDialog({ open: false, newsId: null });
-  };
-
-  const handleConfirmRemove = async () => {
-    const id = confirmDialog.newsId;
-    closeDeleteDialog();
-
-    if (!id) return;
-
+  const handleRemove = async () => {
+    if (!confirmId) return;
+    const id = confirmId;
+    setConfirmId(null);
     try {
-      const data = await removeBookmark(id, token);
-
-      if (data.success) {
-        setBookmarks((prev) => prev.filter((news) => news._id !== id));
-        showToast("Bookmark removed successfully.", "info");
-      } else {
-        showToast(data.message || "Failed to remove bookmark.", "error");
-      }
-    } catch (err) {
-      console.error(err);
-      showToast("Failed to remove bookmark.", "error");
+      const res = await removeBookmark(id, token);
+      if (res.success) {
+        setBookmarks((prev) => prev.filter((b) => b._id !== id));
+        showToast('Bookmark removed.');
+      } else showToast(res.message || 'Failed to remove.', 'error');
+    } catch {
+      showToast('Failed to remove bookmark.', 'error');
     }
   };
 
+  const sectionLabel = {
+    fontFamily: '"Inter", sans-serif',
+    fontWeight: 600,
+    fontSize: '0.6875rem',
+    letterSpacing: '0.1em',
+    textTransform: 'uppercase',
+    color: theme.palette.text.secondary,
+  };
+
   return (
-    <Container maxWidth="lg" sx={{ mt: 5, mb: 5 }}>
-      <Typography variant="h4" fontWeight="bold" gutterBottom>
-        📚 My Bookmarks
-      </Typography>
+    <Box sx={{ backgroundColor: theme.palette.background.default, minHeight: '100vh', pb: 6 }}>
+      <Container maxWidth="lg" sx={{ pt: { xs: 3, md: 4 }, px: { xs: 2, md: 3 } }}>
 
-      {error && (
-        <Alert severity="error" sx={{ mb: 4 }}>
-          {error}
-        </Alert>
-      )}
+        {/* Header */}
+        <Box sx={{ mb: 3 }}>
+          <Typography
+            variant="h3"
+            component="h1"
+            sx={{
+              fontFamily: '"Playfair Display", Georgia, serif',
+              fontWeight: 700,
+              color: theme.palette.text.primary,
+              mb: 0.5,
+            }}
+          >
+            Bookmarks
+          </Typography>
+          <Typography variant="body2" color="text.secondary">
+            Stories you've saved to read later.
+          </Typography>
+        </Box>
 
-      <Grid container spacing={3}>
-        {loading
-          ? Array.from(new Array(6)).map((_, index) => (
-              <Grid xs={12} sm={6} md={4} key={index}>
-                <Card sx={{ height: "100%" }}>
-                  <Skeleton variant="rectangular" height={200} />
-                  <CardContent>
-                    <Skeleton variant="text" width="60%" height={24} sx={{ mb: 1 }} />
-                    <Skeleton variant="text" width="90%" height={32} />
-                    <Skeleton variant="text" width="40%" height={20} sx={{ mb: 2 }} />
-                    <Skeleton variant="rectangular" height={40} />
-                  </CardContent>
-                </Card>
+        <Divider sx={{ mb: 3 }} />
+
+        {error && <Alert severity="error" sx={{ mb: 3 }}>{error}</Alert>}
+
+        <Typography sx={{ ...sectionLabel, mb: 2 }}>
+          {loading ? 'Loading…' : `${bookmarks.length} saved ${bookmarks.length === 1 ? 'story' : 'stories'}`}
+        </Typography>
+
+        <Grid container spacing={3}>
+          {loading ? (
+            Array.from({ length: 6 }).map((_, i) => (
+              <Grid item xs={12} sm={6} md={4} key={i}>
+                <NewsCardSkeleton variant="standard" />
               </Grid>
             ))
-          : bookmarks.map((news) => (
-              <Grid xs={12} sm={6} md={4} key={news._id}>
-                <NewsCard news={news} onRemove={openDeleteDialog} />
+          ) : bookmarks.length > 0 ? (
+            bookmarks.map((item) => (
+              <Grid item xs={12} sm={6} md={4} key={item._id}>
+                <NewsCard
+                  news={item}
+                  variant="standard"
+                  isBookmarked={true}
+                  onBookmark={() => setConfirmId(item._id)}
+                  onClick={() => navigate(`/news/${item._id}`)}
+                />
               </Grid>
-            ))}
-      </Grid>
+            ))
+          ) : (
+            <Grid item xs={12}>
+              <Box sx={{ py: 8, textAlign: 'center' }}>
+                <Typography
+                  variant="h5"
+                  sx={{ fontFamily: '"Playfair Display", Georgia, serif', fontWeight: 700, mb: 1, color: theme.palette.text.primary }}
+                >
+                  No saved stories yet
+                </Typography>
+                <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+                  Tap the bookmark icon on any story to save it here.
+                </Typography>
+                <Box
+                  onClick={() => navigate('/')}
+                  sx={{
+                    display: 'inline-block',
+                    px: 3,
+                    py: 1.25,
+                    border: `1px solid ${theme.palette.text.primary}`,
+                    borderRadius: 1,
+                    cursor: 'pointer',
+                    fontFamily: '"Inter", sans-serif',
+                    fontWeight: 500,
+                    fontSize: '0.875rem',
+                    color: theme.palette.text.primary,
+                    '&:hover': { backgroundColor: theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.04)' },
+                  }}
+                >
+                  Browse news
+                </Box>
+              </Box>
+            </Grid>
+          )}
+        </Grid>
+      </Container>
 
-      {!loading && !error && bookmarks.length === 0 && (
-        <Box
-          sx={{
-            textAlign: "center",
-            py: 8,
-            px: 2,
-            backgroundColor: "background.paper",
-            borderRadius: 2,
-            boxShadow: 1,
-            mt: 2,
-          }}
-        >
-          <BookmarkRemoveIcon sx={{ fontSize: 60, color: "text.secondary", mb: 2 }} />
-          <Typography variant="h6" color="text.secondary" gutterBottom>
-            No Bookmarks Saved Yet
-          </Typography>
-
-          <Typography color="text.secondary" sx={{ mb: 3 }}>
-            Bookmark articles while browsing to read them anytime later.
-          </Typography>
-
-          <Button
-            variant="contained"
-            onClick={() => navigate("/")}
-          >
-            Browse News
-          </Button>
-        </Box>
-      )}
-
-      {/* Confirmation Dialog for Removal */}
-      <Dialog open={confirmDialog.open} onClose={closeDeleteDialog}>
-        <DialogTitle>Remove Bookmark?</DialogTitle>
+      {/* Remove confirm dialog */}
+      <Dialog open={Boolean(confirmId)} onClose={() => setConfirmId(null)}>
+        <DialogTitle sx={{ fontFamily: '"Playfair Display", serif', fontWeight: 700 }}>
+          Remove bookmark?
+        </DialogTitle>
         <DialogContent>
-          <DialogContentText>
-            Are you sure you want to remove this article from your bookmarks? You can re-bookmark it anytime.
+          <DialogContentText sx={{ fontFamily: '"Inter", sans-serif', fontSize: '0.875rem' }}>
+            This story will be removed from your saved list. You can re-bookmark it at any time.
           </DialogContentText>
         </DialogContent>
-        <MuiDialogActions sx={{ px: 3, pb: 2 }}>
-          <Button onClick={closeDeleteDialog} color="inherit">
-            Cancel
-          </Button>
-          <Button onClick={handleConfirmRemove} color="error" variant="contained" autoFocus>
-            Remove
-          </Button>
-        </MuiDialogActions>
+        <DialogActions sx={{ px: 3, pb: 2 }}>
+          <Button onClick={() => setConfirmId(null)} variant="outlined" sx={{ borderRadius: 1 }}>Cancel</Button>
+          <Button onClick={handleRemove} variant="contained" color="error" sx={{ borderRadius: 1 }}>Remove</Button>
+        </DialogActions>
       </Dialog>
 
-      {/* Toast Notification */}
-      <Snackbar
-        open={toast.open}
-        autoHideDuration={3000}
-        onClose={() => setToast({ ...toast, open: false })}
-      >
-        <Alert severity={toast.severity} variant="filled">
-          {toast.message}
-        </Alert>
+      <Snackbar open={toast.open} autoHideDuration={3000} onClose={() => setToast((t) => ({ ...t, open: false }))}>
+        <Alert severity={toast.severity} variant="filled" sx={{ borderRadius: 1 }}>{toast.message}</Alert>
       </Snackbar>
-    </Container>
+    </Box>
   );
 }
 

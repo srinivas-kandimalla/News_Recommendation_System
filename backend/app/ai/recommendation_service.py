@@ -19,6 +19,19 @@ from app.ai.scoring_service import (
 )
 from app.ai.ranking_service import calculate_hybrid_score
 from app.ai.explanation_service import generate_reason
+from app.ai.user_profile_service import (
+    build_long_term_profile,
+    build_short_term_profile,
+    combine_user_profiles,
+    fetch_user_history_embeddings
+)
+from app.ai.attention_service import (
+    compute_combined_attention_user_vector
+)
+from app.ai.context_service import calculate_context_relevance
+
+
+
 
 
 # =====================================================
@@ -206,34 +219,22 @@ def get_personalized_recommendations(
                 "status_code": 200
             }
 
-    user_embeddings = []
-
-    if read_news_ids:
-        read_articles = news_collection.find(
-            {"_id": {"$in": read_news_ids}},
-            projection={"embedding": 1}
-        )
-
-        for news in read_articles:
-            if news and "embedding" in news:
-                user_embeddings.append(news["embedding"])
-
-    if not user_embeddings:
-
+        # If user has zero reading history and news database is empty, return empty 200 OK array
         return {
-
-            "success": False,
-
-            "message": "No embeddings found",
-
-            "status_code": 404
-
+            "success": True,
+            "count": 0,
+            "recommendations": [],
+            "status_code": 200
         }
 
-    user_profile = np.mean(
-        user_embeddings,
-        axis=0
-    )
+    long_embeddings, long_ids, short_embeddings, short_ids, short_categories = fetch_user_history_embeddings(user_id)
+
+    if not long_embeddings and not short_embeddings:
+        return {
+            "success": False,
+            "message": "No embeddings found for user history",
+            "status_code": 404
+        }
 
     analytics = get_user_analytics(user_id)
 
@@ -290,10 +291,36 @@ def get_personalized_recommendations(
         if "embedding" not in news:
             continue
 
-        semantic_score = calculate_similarity(
-            user_profile,
-            news["embedding"]
+        c_emb = news["embedding"]
+
+        # Compute candidate-aware attention vector & debug metrics
+        att_user_vector, att_debug = compute_combined_attention_user_vector(
+            long_embeddings,
+            short_embeddings,
+            c_emb,
+            long_ids,
+            short_ids
         )
+
+        if att_user_vector is None:
+            continue
+
+        raw_semantic_score = calculate_similarity(
+            att_user_vector,
+            c_emb
+        )
+
+        # Context Fusion: Refine semantic score with deterministic context relevance factor
+        c_relevance, context_debug = calculate_context_relevance(
+            news,
+            short_categories
+        )
+
+        # Bounded context-fused semantic score in [0.0, 1.0]
+        semantic_score = max(0.0, min(1.0, raw_semantic_score * c_relevance))
+
+        short_term_sim = att_debug.get("short_term", {}).get("max_similarity", 0.0)
+        long_term_sim = att_debug.get("long_term", {}).get("max_similarity", 0.0)
 
         recency_score = calculate_recency_score(
             news.get("published"),
@@ -322,7 +349,9 @@ def get_personalized_recommendations(
             semantic_score,
             popularity_score,
             recency_score,
-            interest_score
+            interest_score,
+            short_term_sim=short_term_sim,
+            long_term_sim=long_term_sim
         )
 
         hybrid_score = calculate_hybrid_score(
@@ -360,6 +389,11 @@ def get_personalized_recommendations(
                 4
             ),
 
+            "raw_semantic_score": round(
+                raw_semantic_score,
+                4
+            ),
+
             "recency_score": round(
                 recency_score,
                 4
@@ -380,7 +414,11 @@ def get_personalized_recommendations(
                 4
             ),
 
-            "reason": reason
+            "reason": reason,
+
+            "attention_debug": att_debug,
+
+            "context_debug": context_debug
 
         })
 

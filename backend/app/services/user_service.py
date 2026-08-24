@@ -127,10 +127,18 @@ def get_profile(user_data):
     """
     Fetch logged-in user's profile.
     """
+    if isinstance(user_data, dict):
+        user_id = user_data.get("_id") or user_data.get("user_id")
+    else:
+        user_id = user_data
 
-    user = users_collection.find_one(
-        {"_id": ObjectId(user_data["user_id"])}
-    )
+    if isinstance(user_id, str):
+        try:
+            user_id = ObjectId(user_id)
+        except Exception:
+            pass
+
+    user = users_collection.find_one({"_id": user_id})
 
     if not user:
         return {
@@ -141,7 +149,53 @@ def get_profile(user_data):
     return {
         "success": True,
         "user": {
-            "name": user["name"],
-            "email": user["email"]
+            "name": user.get("name", ""),
+            "email": user.get("email", ""),
+            "role": user.get("role", "user")
         }
     }
+
+
+def reset_password(user_data):
+    """
+    Reset user password by email.
+    """
+    if not user_data.get("email"):
+        return {
+            "success": False,
+            "message": "Email is required"
+        }
+
+    if not user_data.get("new_password"):
+        return {
+            "success": False,
+            "message": "New password is required"
+        }
+
+    if len(user_data["new_password"]) < 8:
+        return {
+            "success": False,
+            "message": "New password must be at least 8 characters long"
+        }
+
+    email = user_data["email"].strip().lower()
+
+    user = users_collection.find_one({"email": email})
+    if not user:
+        return {
+            "success": False,
+            "message": "No account found with this email address"
+        }
+
+    password = user_data["new_password"].encode("utf-8")
+    hashed_password = bcrypt.hashpw(password, bcrypt.gensalt()).decode("utf-8")
+
+    users_collection.update_one(
+        {"email": email},
+        {"$set": {"password": hashed_password}}
+    )
+
+    return {
+        "success": True,
+        "message": "Password reset successfully. You can now sign in with your new password."
+    }

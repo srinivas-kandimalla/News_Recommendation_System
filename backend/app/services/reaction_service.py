@@ -58,10 +58,10 @@ def save_reaction(user_id, news_id, reaction):
     if existing:
 
         if existing["reaction"] == reaction:
-
+            reaction_collection.delete_one({"_id": existing["_id"]})
             return {
                 "success": True,
-                "message": f"Already {reaction}d",
+                "message": "Reaction removed",
                 "status_code": 200
             }
 

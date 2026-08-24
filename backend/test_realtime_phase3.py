@@ -84,6 +84,7 @@ class TestRealtimePhase3(unittest.TestCase):
              patch("app.services.news_fetch_service.generate_embedding", side_effect=RuntimeError("Transformer Model OOM")):
             
             mock_response = mock_get.return_value
+            mock_response.status_code = 200
             mock_response.raise_for_status.return_value = None
             mock_response.json.return_value = mock_gnews_response
 
@@ -115,6 +116,7 @@ class TestRealtimePhase3(unittest.TestCase):
 
         with patch("requests.get") as mock_get:
             mock_response = mock_get.return_value
+            mock_response.status_code = 200
             mock_response.raise_for_status.return_value = None
             mock_response.json.return_value = mock_gnews_response
 

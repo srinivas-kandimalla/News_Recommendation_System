@@ -1,0 +1,24 @@
+NEXORA SPEED TEST — Original Evaluator
+==================================================
+Cache loaded: 51282 articles
+Total unique users: 49182
+
+Running 500-user speed test...
+
+SPEED TEST RESULTS
+==================================================
+  Users tested     : 500
+  Impressions done : 1517
+  Candidates proc  : 55025
+  Skipped          : 23
+  Elapsed          : 299.25s
+  Throughput:
+    Users/sec      : 1.671
+    Impr/sec       : 5.069
+    Cands/sec      : 183.9
+
+  EXTRAPOLATION to 49182 users:
+    Est total impr : 149218
+    Est total time : 29435s  = 490.6 min  = 8.18 hrs
+
+DONE

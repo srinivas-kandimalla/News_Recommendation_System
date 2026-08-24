@@ -48,6 +48,7 @@ def init_indexes():
     # Create indexes (idempotent - skipped by MongoDB if already exists)
     users_collection.create_index("email", unique=True)
     reading_history_collection.create_index([("user_id", 1), ("news_id", 1)])
+    reading_history_collection.create_index([("user_id", 1), ("read_at", -1)])
     reading_history_collection.create_index("news_id")
     bookmark_collection.create_index([("user_id", 1), ("news_id", 1)])
     bookmark_collection.create_index("news_id")

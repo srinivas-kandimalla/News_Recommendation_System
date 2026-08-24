@@ -77,7 +77,7 @@ def get_user_read_news(user_id):
     Returns a list of news IDs that the user has already read.
     """
     try:
-        user_object_id = ObjectId(user_id)
+        user_object_id = ObjectId(user_id) if isinstance(user_id, str) else user_id
     except (InvalidId, Exception):
         return []
 
@@ -91,3 +91,22 @@ def get_user_read_news(user_id):
         news_ids.append(item["news_id"])
 
     return news_ids
+
+
+def get_user_read_history_ordered(user_id, limit=None):
+    """
+    Returns news ObjectIds read by user ordered by most recent interaction (read_at DESCENDING).
+    """
+    try:
+        user_object_id = ObjectId(user_id) if isinstance(user_id, str) else user_id
+    except (InvalidId, Exception):
+        return []
+
+    cursor = reading_history_collection.find(
+        {"user_id": user_object_id}
+    ).sort([("read_at", -1), ("_id", -1)])
+
+    if limit and limit > 0:
+        cursor = cursor.limit(limit)
+
+    return [item["news_id"] for item in cursor if "news_id" in item]

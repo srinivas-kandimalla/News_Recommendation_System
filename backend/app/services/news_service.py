@@ -62,31 +62,44 @@ def create_news(news_data):
 # Get All News (Pagination)
 # ======================================================
 
-def get_all_news(page=1, limit=5):
+def get_all_news(page=1, limit=5, category=None):
 
     skip = (page - 1) * limit
 
-    total_news = news_collection.count_documents({})
+    query = {}
+    if category and str(category).strip().lower() != "all":
+        query["category"] = {"$regex": f"^{re.escape(str(category).strip())}$", "$options": "i"}
+
+    total_news = news_collection.count_documents(query)
 
     news = (
-        news_collection.find({}, projection={"embedding": 0})
+        news_collection.find(query, projection={"embedding": 0})
         .sort([("published", DESCENDING), ("created_at", DESCENDING), ("_id", DESCENDING)])
         .skip(skip)
         .limit(limit)
     )
 
     news_list = []
+    seen_titles = set()
 
     for item in news:
+        raw_title = item.get("title", "").strip()
+        norm_title = raw_title.lower()
+
+        if norm_title and norm_title in seen_titles:
+            continue
+        if norm_title:
+            seen_titles.add(norm_title)
 
         news_list.append({
             "_id": str(item.get("_id")),
-            "title": item.get("title", ""),
+            "title": raw_title,
             "content": item.get("content", ""),
             "category": item.get("category", ""),
             "author": item.get("author", ""),
             "source": item.get("source", ""),
             "image_url": item.get("image_url", ""),
+            "url": item.get("url", ""),
             "created_at": item.get("published") or item.get("created_at")
         })
 
@@ -124,6 +137,17 @@ def get_news_by_id(news_id):
             "message": "News not found",
             "status_code": 404
         }
+
+    # On-demand full text extraction if content is truncated ('...')
+    if news.get("url") and (not news.get("content") or news.get("content").endswith("...") or len(news.get("content", "")) < 250):
+        try:
+            from app.services.news_fetch_service import extract_full_article_text
+            scraped = extract_full_article_text(news["url"])
+            if scraped and len(scraped) > len(news.get("content", "")):
+                news["content"] = scraped
+                news_collection.update_one({"_id": object_id}, {"$set": {"content": scraped}})
+        except Exception:
+            pass
 
     news["_id"] = str(news["_id"])
     news.pop("embedding", None)

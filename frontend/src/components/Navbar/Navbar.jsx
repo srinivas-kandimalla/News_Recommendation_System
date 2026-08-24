@@ -1,280 +1,271 @@
 import React, { useState } from 'react';
 import {
+  AppBar,
+  Toolbar,
   Box,
-  Typography,
   IconButton,
+  InputBase,
+  Typography,
+  useMediaQuery,
   Tooltip,
-  Badge,
-  Menu,
-  MenuItem,
-  Button,
 } from '@mui/material';
+import { useTheme } from '@mui/material/styles';
+import { NavLink, useNavigate } from 'react-router-dom';
 import MenuIcon from '@mui/icons-material/Menu';
+import SearchIcon from '@mui/icons-material/Search';
 import LightModeIcon from '@mui/icons-material/LightMode';
 import DarkModeIcon from '@mui/icons-material/DarkMode';
-import NewspaperIcon from '@mui/icons-material/Newspaper';
-import TrendingUpIcon from '@mui/icons-material/TrendingUp';
-import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
-import HomeIcon from '@mui/icons-material/Home';
-import BookmarkIcon from '@mui/icons-material/Bookmark';
-import BarChartIcon from '@mui/icons-material/BarChart';
-import NotificationsIcon from '@mui/icons-material/Notifications';
-import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
-import { useNavigate } from 'react-router-dom';
+import CloseIcon from '@mui/icons-material/Close';
 
-import { StyledAppBar, StyledToolbar } from './navbar.styles';
-import NavItem from './NavItem';
-import SearchInput from './SearchInput';
+import { useThemeMode } from '../../context/ThemeContext';
+import { useAuth } from '../../context/AuthContext';
 import ProfileMenu from './ProfileMenu';
 import MobileDrawer from './MobileDrawer';
+import { searchNews } from '../../services/newsService';
 
-const navItems = [
-  { label: 'Home', path: '/', icon: HomeIcon },
-  { label: 'Trending', path: '/trending', icon: TrendingUpIcon },
-  { label: 'AI For You', path: '/recommendations', icon: AutoAwesomeIcon },
-  { label: 'Bookmarks', path: '/bookmarks', icon: BookmarkIcon },
-  { label: 'Analytics', path: '/analytics', icon: BarChartIcon },
+// Futuristic Nexora AI Logo — Sparkle & Neural Pulse
+const NexoraIcon = ({ size = 26 }) => (
+  <svg
+    width={size}
+    height={size}
+    viewBox="0 0 32 32"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+    style={{ flexShrink: 0 }}
+  >
+    <defs>
+      <linearGradient id="nexoraGrad" x1="0" y1="0" x2="32" y2="32" gradientUnits="userSpaceOnUse">
+        <stop stopColor="#2563EB" />
+        <stop offset="0.5" stopColor="#7C3AED" />
+        <stop offset="1" stopColor="#EC4899" />
+      </linearGradient>
+    </defs>
+    <rect width="32" height="32" rx="10" fill="url(#nexoraGrad)" />
+    <path
+      d="M16 6L18.5 13.5L26 16L18.5 18.5L16 26L13.5 18.5L6 16L13.5 13.5L16 6Z"
+      fill="white"
+    />
+  </svg>
+);
+
+const NAV_LINKS = [
+  { label: 'Home', to: '/' },
+  { label: 'Discover', to: '/discover' },
+  { label: 'For You', to: '/recommendations' },
+  { label: 'Trending', to: '/trending' },
+  { label: 'Bookmarks', to: '/bookmarks' },
 ];
 
-const categories = [
-  'Technology',
-  'Business',
-  'World',
-  'Sports',
-  'Entertainment',
-  'Health',
-  'Science',
-];
-
-const Navbar = ({ onSearch, darkMode = false, onToggleTheme }) => {
-  const [mobileOpen, setMobileOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [categoryAnchor, setCategoryAnchor] = useState(null);
+const Navbar = () => {
+  const theme = useTheme();
+  const { toggleTheme, isDark } = useThemeMode();
+  const { isAuthenticated } = useAuth();
   const navigate = useNavigate();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
-  const handleDrawerToggle = () => {
-    setMobileOpen((prev) => !prev);
-  };
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [searchValue, setSearchValue] = useState('');
 
-  const handleSearchChange = (e) => {
-    setSearchQuery(e.target.value);
-    if (onSearch) {
-      onSearch(e.target.value);
+  const handleSearchSubmit = (e) => {
+    e.preventDefault();
+    if (searchValue.trim()) {
+      navigate(`/?search=${encodeURIComponent(searchValue.trim())}`);
+      setSearchOpen(false);
+      setSearchValue('');
     }
   };
 
-  const handleSearchSubmit = (query) => {
-    if (query.trim()) {
-      navigate(`/?search=${encodeURIComponent(query.trim())}`);
-    }
-  };
-
-  const handleCategoryOpen = (event) => {
-    setCategoryAnchor(event.currentTarget);
-  };
-
-  const handleCategoryClose = () => {
-    setCategoryAnchor(null);
-  };
-
-  const handleCategorySelect = (category) => {
-    handleCategoryClose();
-    navigate(`/?category=${encodeURIComponent(category)}`);
-  };
+  const navLinkSx = ({ isActive }) => ({
+    fontFamily: '"Inter", sans-serif',
+    fontWeight: 600,
+    fontSize: '0.92rem',
+    color: isActive ? (isDark ? '#60A5FA' : '#2563EB') : theme.palette.text.secondary,
+    textDecoration: 'none',
+    padding: '6px 12px',
+    borderRadius: '10px',
+    backgroundColor: isActive
+      ? (isDark ? 'rgba(59, 130, 246, 0.15)' : 'rgba(37, 99, 235, 0.08)')
+      : 'transparent',
+    transition: 'all 0.2s ease',
+    '&:hover': {
+      color: theme.palette.text.primary,
+      backgroundColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.04)',
+    },
+  });
 
   return (
-    <StyledAppBar>
-      <StyledToolbar>
-        {/* Brand Logo & Title */}
-        <Box
-          onClick={() => navigate('/')}
+    <>
+      <AppBar
+        position="sticky"
+        elevation={0}
+        sx={{
+          top: 0,
+          zIndex: 1100,
+          height: 64,
+          justifyContent: 'center',
+          borderBottom: `1px solid ${theme.palette.divider}`,
+        }}
+      >
+        <Toolbar
           sx={{
+            maxWidth: 1280,
+            width: '100%',
+            mx: 'auto',
+            px: { xs: 2, md: 3 },
+            minHeight: '64px !important',
+            height: 64,
             display: 'flex',
             alignItems: 'center',
-            gap: 1.25,
-            cursor: 'pointer',
-            mr: 3,
+            gap: 0,
           }}
         >
+          {/* Mobile menu button */}
+          {isMobile && (
+            <IconButton
+              onClick={() => setDrawerOpen(true)}
+              edge="start"
+              sx={{ mr: 1, color: theme.palette.text.primary }}
+            >
+              <MenuIcon />
+            </IconButton>
+          )}
+
+          {/* Logo: AI Spark Icon + Nexora Gradient Wordmark */}
           <Box
-            sx={(theme) => ({
+            component={NavLink}
+            to="/"
+            sx={{
               display: 'flex',
               alignItems: 'center',
-              justifyContent: 'center',
-              width: 38,
-              height: 38,
-              borderRadius: `${theme.shape.borderRadius * 1.5}px`,
-              background: `linear-gradient(135deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`,
-              color: '#FFFFFF',
-              boxShadow: `0 4px 12px ${theme.palette.primary.main}40`,
-            })}
+              gap: 1.25,
+              textDecoration: 'none',
+              flexShrink: 0,
+              mr: { xs: 'auto', md: 4 },
+            }}
           >
-            <NewspaperIcon sx={{ fontSize: 22 }} />
+            <NexoraIcon size={30} />
+            <Typography
+              sx={{
+                fontFamily: '"Plus Jakarta Sans", "Inter", sans-serif',
+                fontWeight: 800,
+                fontSize: { xs: '1.35rem', md: '1.5rem' },
+                background: isDark
+                  ? 'linear-gradient(135deg, #60A5FA 0%, #C4B5FD 50%, #F472B6 100%)'
+                  : 'linear-gradient(135deg, #2563EB 0%, #7C3AED 50%, #EC4899 100%)',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                letterSpacing: '-0.03em',
+                lineHeight: 1,
+              }}
+            >
+              Nexora
+            </Typography>
           </Box>
-          <Typography
-            variant="h6"
-            component="div"
-            sx={(theme) => ({
-              fontFamily: theme.typography.h6.fontFamily,
-              fontWeight: 800,
-              color: theme.palette.text.primary,
-              letterSpacing: '-0.02em',
-              display: { xs: 'none', sm: 'block' },
-            })}
-          >
-            NewsPulse
-          </Typography>
-        </Box>
 
-        {/* Desktop Nav Items */}
-        <Box
-          sx={{
-            display: { xs: 'none', md: 'flex' },
-            alignItems: 'center',
-            gap: 0.5,
-          }}
-        >
-          {navItems.slice(0, 3).map((item) => (
-            <NavItem
-              key={item.path}
-              to={item.path}
-              label={item.label}
-              icon={item.icon}
-            />
-          ))}
+          {/* Desktop nav links */}
+          {!isMobile && !searchOpen && (
+            <Box
+              component="nav"
+              sx={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 3,
+                flex: 1,
+              }}
+            >
+              {NAV_LINKS.map((link) => (
+                <Box
+                  key={link.to}
+                  component={NavLink}
+                  to={link.to}
+                  style={navLinkSx}
+                  sx={{ whiteSpace: 'nowrap' }}
+                >
+                  {link.label}
+                </Box>
+              ))}
+            </Box>
+          )}
 
-          {/* Categories Dropdown Button */}
-          <Button
-            onClick={handleCategoryOpen}
-            endIcon={<KeyboardArrowDownIcon />}
-            sx={(theme) => ({
-              fontFamily: theme.typography.button.fontFamily,
-              fontWeight: 500,
-              fontSize: theme.typography.button.fontSize,
-              color: theme.palette.text.secondary,
-              borderRadius: theme.shape.borderRadius * 2,
-              padding: theme.spacing(1, 1.5),
-              textTransform: 'none',
-              '&:hover': {
-                color: theme.palette.primary.main,
-                backgroundColor: `${theme.palette.primary.main}15`,
-              },
-            })}
-          >
-            Categories
-          </Button>
+          {/* Spacer on desktop when search closed */}
+          {!isMobile && !searchOpen && <Box sx={{ flex: 1 }} />}
 
-          <Menu
-            anchorEl={categoryAnchor}
-            open={Boolean(categoryAnchor)}
-            onClose={handleCategoryClose}
-            slotProps={{
-              paper: {
-                elevation: 3,
-                sx: (theme) => ({
-                  mt: 1,
-                  borderRadius: theme.shape.borderRadius * 2,
-                  minWidth: 160,
-                }),
-              },
-            }}
-          >
-            {categories.map((cat) => (
-              <MenuItem
-                key={cat}
-                onClick={() => handleCategorySelect(cat)}
-                sx={{ fontSize: '0.875rem', fontWeight: 500 }}
+          {/* Inline search bar (desktop) */}
+          {!isMobile && searchOpen && (
+            <Box
+              component="form"
+              onSubmit={handleSearchSubmit}
+              sx={{
+                flex: 1,
+                display: 'flex',
+                alignItems: 'center',
+                mx: 2,
+                border: `1px solid ${theme.palette.divider}`,
+                borderRadius: 1,
+                px: 1.5,
+                height: 36,
+                backgroundColor: theme.palette.background.default,
+              }}
+            >
+              <SearchIcon sx={{ fontSize: 18, color: theme.palette.text.secondary, mr: 1 }} />
+              <InputBase
+                autoFocus
+                fullWidth
+                placeholder="Search articles, topics, sources..."
+                value={searchValue}
+                onChange={(e) => setSearchValue(e.target.value)}
+                sx={{
+                  fontSize: '0.875rem',
+                  fontFamily: '"Inter", sans-serif',
+                  color: theme.palette.text.primary,
+                }}
+              />
+              <IconButton size="small" onClick={() => { setSearchOpen(false); setSearchValue(''); }}>
+                <CloseIcon sx={{ fontSize: 16 }} />
+              </IconButton>
+            </Box>
+          )}
+
+          {/* Right actions */}
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, ml: { xs: 0, md: 1 } }}>
+            {/* Search toggle */}
+            {!searchOpen && (
+              <Tooltip title="Search (Ctrl+K)">
+                <IconButton
+                  onClick={() => setSearchOpen(true)}
+                  sx={{ color: theme.palette.text.secondary }}
+                >
+                  <SearchIcon sx={{ fontSize: 20 }} />
+                </IconButton>
+              </Tooltip>
+            )}
+
+            {/* Theme toggle */}
+            <Tooltip title={isDark ? 'Light mode' : 'Dark mode'}>
+              <IconButton
+                onClick={toggleTheme}
+                sx={{ color: theme.palette.text.secondary }}
               >
-                {cat}
-              </MenuItem>
-            ))}
-          </Menu>
+                {isDark
+                  ? <LightModeIcon sx={{ fontSize: 20 }} />
+                  : <DarkModeIcon sx={{ fontSize: 20 }} />
+                }
+              </IconButton>
+            </Tooltip>
 
-          {navItems.slice(3).map((item) => (
-            <NavItem
-              key={item.path}
-              to={item.path}
-              label={item.label}
-              icon={item.icon}
-            />
-          ))}
-        </Box>
+            {/* Profile */}
+            <ProfileMenu />
+          </Box>
+        </Toolbar>
+      </AppBar>
 
-        <Box sx={{ flexGrow: 1 }} />
-
-        {/* Search Bar */}
-        <Box sx={{ display: { xs: 'none', sm: 'block' } }}>
-          <SearchInput
-            value={searchQuery}
-            onChange={handleSearchChange}
-            onSubmit={handleSearchSubmit}
-          />
-        </Box>
-
-        {/* Action Controls */}
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, ml: 1 }}>
-          {/* Notifications Icon Button */}
-          <Tooltip title="Notifications">
-            <IconButton
-              color="inherit"
-              sx={(theme) => ({
-                color: theme.palette.text.secondary,
-                '&:hover': {
-                  color: theme.palette.primary.main,
-                },
-              })}
-            >
-              <Badge badgeContent={3} color="error">
-                <NotificationsIcon fontSize="small" />
-              </Badge>
-            </IconButton>
-          </Tooltip>
-
-          {/* Theme Toggle Placeholder */}
-          <Tooltip title={darkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'}>
-            <IconButton
-              onClick={onToggleTheme}
-              color="inherit"
-              aria-label="toggle theme"
-              sx={(theme) => ({
-                color: theme.palette.text.secondary,
-                '&:hover': {
-                  color: theme.palette.primary.main,
-                },
-              })}
-            >
-              {darkMode ? <LightModeIcon fontSize="small" /> : <DarkModeIcon fontSize="small" />}
-            </IconButton>
-          </Tooltip>
-
-          {/* User Profile Menu */}
-          <ProfileMenu />
-
-          {/* Mobile Drawer Trigger */}
-          <IconButton
-            color="inherit"
-            aria-label="open drawer"
-            edge="end"
-            onClick={handleDrawerToggle}
-            sx={{
-              display: { md: 'none' },
-              ml: 1,
-            }}
-          >
-            <MenuIcon />
-          </IconButton>
-        </Box>
-      </StyledToolbar>
-
-      {/* Mobile Navigation Drawer */}
       <MobileDrawer
-        open={mobileOpen}
-        onClose={handleDrawerToggle}
-        navItems={navItems}
-        searchValue={searchQuery}
-        onSearchChange={handleSearchChange}
+        open={drawerOpen}
+        onClose={() => setDrawerOpen(false)}
+        navLinks={NAV_LINKS}
       />
-    </StyledAppBar>
+    </>
   );
 };
 

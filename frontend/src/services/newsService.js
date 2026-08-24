@@ -14,9 +14,10 @@ const authHeader = (token) => ({
 // Public News APIs
 // ======================================================
 
-// Get all news
-export const getAllNews = async (page = 1, limit = 10) => {
-  const { data } = await api.get(`/news?page=${page}&limit=${limit}`);
+// Get all news with category filter
+export const getAllNews = async (page = 1, limit = 10, category = '') => {
+  const catParam = category && category.toLowerCase() !== 'all' ? `&category=${encodeURIComponent(category)}` : '';
+  const { data } = await api.get(`/news?page=${page}&limit=${limit}${catParam}`);
   return data;
 };
 

@@ -27,16 +27,12 @@ def create_app():
     # Load configuration
     app.config.from_object(Config)
 
-    # Enable CORS
+    # Enable CORS with configurable origins
     CORS(
         app,
         resources={
             r"/*": {
-                "origins": [
-                    "http://localhost:5173",
-                    "http://localhost:5174",
-                    "http://localhost:5175"
-                ]
+                "origins": app.config.get("ALLOWED_ORIGINS", ["http://localhost:5173"])
             }
         }
     )

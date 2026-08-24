@@ -40,3 +40,17 @@ def profile(current_user):
         return jsonify(result), 200
 
     return jsonify(result), 404
+
+
+def reset_user_password():
+    """
+    Reset user password by email.
+    """
+    user_data = request.get_json()
+    from app.services.user_service import reset_password
+    result = reset_password(user_data)
+
+    if result["success"]:
+        return jsonify(result), 200
+
+    return jsonify(result), 400

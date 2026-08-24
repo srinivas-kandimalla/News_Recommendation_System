@@ -15,3 +15,11 @@ export const loginUser = async (userData) => {
   const response = await api.post("/login", userData);
   return response.data;
 };
+
+// =============================
+// Reset Password
+// =============================
+export const resetPassword = async (data) => {
+  const response = await api.post("/reset-password", data);
+  return response.data;
+};

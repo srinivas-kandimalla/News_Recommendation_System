@@ -1,82 +1,59 @@
 import React from 'react';
-import { Box, Chip, Stack } from '@mui/material';
-import { alpha, useTheme } from '@mui/material/styles';
+import { Box, Stack } from '@mui/material';
+import { useTheme } from '@mui/material/styles';
 
-const DEFAULT_CATEGORIES = [
-  'All',
-  'Technology',
-  'Business',
-  'World',
-  'Sports',
-  'Entertainment',
-  'Health',
-  'Science',
-];
+const CATEGORIES = ['All', 'Technology', 'Sports', 'Business', 'Science', 'Entertainment', 'Health', 'World'];
 
-const CategoryBar = ({
-  categories = DEFAULT_CATEGORIES,
-  selectedCategory = 'All',
-  onSelectCategory,
-}) => {
+const CategoryBar = ({ selectedCategory, onSelectCategory, categories }) => {
   const theme = useTheme();
+  const cats = categories || CATEGORIES;
+  const isDark = theme.palette.mode === 'dark';
 
   return (
     <Box
       sx={{
-        width: '100%',
+        py: 1.5,
+        mb: 2,
         overflowX: 'auto',
-        py: 1,
-        px: 0.5,
-        scrollbarWidth: 'none',
         '&::-webkit-scrollbar': { display: 'none' },
+        msOverflowStyle: 'none',
+        scrollbarWidth: 'none',
       }}
     >
-      <Stack direction="row" spacing={1.25} alignItems="center">
-        {categories.map((cat) => {
-          const isSelected =
-            selectedCategory.toLowerCase() === cat.toLowerCase();
-
+      <Stack direction="row" spacing={1} sx={{ minWidth: 'max-content', px: 0.5 }}>
+        {cats.map((cat) => {
+          const isActive = selectedCategory === cat;
           return (
-            <Chip
+            <Box
               key={cat}
-              label={cat}
-              onClick={() => onSelectCategory && onSelectCategory(cat)}
-              clickable
+              onClick={() => onSelectCategory(cat)}
               sx={{
-                fontWeight: isSelected ? 600 : 500,
-                fontSize: '0.85rem',
-                py: 2.2,
-                px: 1.5,
-                borderRadius: `${theme.shape.borderRadius * 3}px`,
-                backgroundColor: isSelected
-                  ? theme.palette.primary.main
-                  : alpha(theme.palette.text.primary, 0.04),
-                color: isSelected
-                  ? theme.palette.primary.contrastText
-                  : theme.palette.text.primary,
-                border: `1px solid ${
-                  isSelected
-                    ? theme.palette.primary.main
-                    : theme.palette.divider
-                }`,
-                boxShadow: isSelected
-                  ? `0 4px 12px ${alpha(theme.palette.primary.main, 0.25)}`
-                  : 'none',
-                transition: theme.transitions.create(
-                  ['background-color', 'color', 'border-color', 'box-shadow', 'transform'],
-                  { duration: theme.transitions.duration.shorter }
-                ),
+                px: 2.25,
+                py: 0.85,
+                borderRadius: '12px',
+                cursor: 'pointer',
+                fontFamily: '"Inter", sans-serif',
+                fontWeight: isActive ? 700 : 500,
+                fontSize: '0.875rem',
+                color: isActive ? '#FFFFFF' : theme.palette.text.secondary,
+                background: isActive
+                  ? (isDark ? 'linear-gradient(135deg, #3B82F6 0%, #8B5CF6 100%)' : 'linear-gradient(135deg, #2563EB 0%, #7C3AED 100%)')
+                  : (isDark ? 'rgba(255, 255, 255, 0.05)' : 'rgba(241, 245, 249, 0.9)'),
+                boxShadow: isActive ? '0 4px 14px rgba(37, 99, 235, 0.35)' : 'none',
+                whiteSpace: 'nowrap',
+                transition: 'all 0.25s ease',
+                userSelect: 'none',
                 '&:hover': {
-                  backgroundColor: isSelected
-                    ? theme.palette.primary.dark
-                    : alpha(theme.palette.primary.main, 0.08),
-                  borderColor: isSelected
-                    ? theme.palette.primary.dark
-                    : alpha(theme.palette.primary.main, 0.3),
+                  color: isActive ? '#FFFFFF' : theme.palette.text.primary,
                   transform: 'translateY(-1px)',
+                  background: isActive
+                    ? (isDark ? 'linear-gradient(135deg, #3B82F6 0%, #8B5CF6 100%)' : 'linear-gradient(135deg, #2563EB 0%, #7C3AED 100%)')
+                    : (isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(226, 232, 240, 0.9)'),
                 },
               }}
-            />
+            >
+              {cat}
+            </Box>
           );
         })}
       </Stack>
@@ -85,3 +62,4 @@ const CategoryBar = ({
 };
 
 export default CategoryBar;
+
