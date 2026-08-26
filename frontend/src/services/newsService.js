@@ -101,7 +101,7 @@ export const removeBookmark = async (newsId, token) => {
 // Like News
 export const likeNews = async (newsId, token) => {
   const { data } = await api.post(
-    `/like/${newsId}`,
+    `/news/${newsId}/like`,
     {},
     authHeader(token)
   );
@@ -112,7 +112,7 @@ export const likeNews = async (newsId, token) => {
 // Dislike News
 export const dislikeNews = async (newsId, token) => {
   const { data } = await api.post(
-    `/dislike/${newsId}`,
+    `/news/${newsId}/dislike`,
     {},
     authHeader(token)
   );

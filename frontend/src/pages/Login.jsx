@@ -2,30 +2,38 @@ import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import {
   Box,
-  Container,
   Typography,
   TextField,
   Button,
   Snackbar,
   Alert,
-  Divider,
   Dialog,
   DialogTitle,
   DialogContent,
   DialogActions,
   Stack,
+  InputAdornment,
+  IconButton,
+  Paper,
 } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
+import EmailOutlinedIcon from '@mui/icons-material/EmailOutlined';
+import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
+import Visibility from '@mui/icons-material/Visibility';
+import VisibilityOff from '@mui/icons-material/VisibilityOff';
 
 import { loginUser, resetPassword } from '../services/authService';
 import { useAuth } from '../context/AuthContext';
+import { NexoraIcon } from '../components/common/NexoraLogo';
 
 function Login() {
   const navigate = useNavigate();
   const theme = useTheme();
   const { login } = useAuth();
+  const isDark = theme.palette.mode === 'dark';
 
   const [form, setForm] = useState({ email: '', password: '' });
+  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [toast, setToast] = useState({ open: false, severity: 'success', message: '' });
 
@@ -35,7 +43,6 @@ function Login() {
   const [resetLoading, setResetLoading] = useState(false);
 
   const showToast = (message, severity = 'success') => setToast({ open: true, message, severity });
-
   const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
   const handleResetChange = (e) => setResetForm({ ...resetForm, [e.target.name]: e.target.value });
 
@@ -87,6 +94,8 @@ function Login() {
     }
   };
 
+  const primaryAccent = isDark ? '#38BDF8' : '#2563EB';
+
   return (
     <Box
       sx={{
@@ -96,140 +105,214 @@ function Login() {
         alignItems: 'center',
         justifyContent: 'center',
         px: 2,
+        py: 6,
       }}
     >
       <Box sx={{ width: '100%', maxWidth: 420 }}>
-        {/* Wordmark */}
-        <Typography
-          align="center"
-          sx={{
-            fontFamily: '"Plus Jakarta Sans", "Inter", sans-serif',
-            fontWeight: 800,
-            fontSize: '2.2rem',
-            background: theme.palette.mode === 'dark'
-              ? 'linear-gradient(135deg, #60A5FA 0%, #C4B5FD 50%, #F472B6 100%)'
-              : 'linear-gradient(135deg, #2563EB 0%, #7C3AED 50%, #EC4899 100%)',
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent',
-            mb: 0.5,
-            letterSpacing: '-0.03em',
-          }}
-        >
-          Nexora
-        </Typography>
-        <Typography
-          align="center"
-          variant="body2"
-          color="text.secondary"
-          sx={{ mb: 3.5 }}
-        >
-          Sign in to your personalized AI news feed
-        </Typography>
-
-        {/* Form panel */}
-        <Box
+        {/* Clean Form Card */}
+        <Paper
+          elevation={0}
           component="form"
           onSubmit={handleSubmit}
           sx={{
+            p: { xs: 3.5, sm: 4.5 },
+            borderRadius: '24px',
             border: `1px solid ${theme.palette.divider}`,
-            borderRadius: '16px',
-            p: 3.5,
             backgroundColor: theme.palette.background.paper,
-            boxShadow: theme.palette.mode === 'dark' ? '0 4px 24px rgba(0,0,0,0.4)' : '0 4px 20px rgba(37,99,235,0.06)',
+            boxShadow: isDark ? '0 12px 40px rgba(0,0,0,0.45)' : '0 12px 40px rgba(37,99,235,0.06)',
+            textAlign: 'center',
           }}
         >
-          <TextField
-            fullWidth
-            label="Email"
-            name="email"
-            type="email"
-            required
-            autoComplete="email"
-            value={form.email}
-            onChange={handleChange}
-            size="small"
-            sx={{ mb: 2 }}
-          />
-          <TextField
-            fullWidth
-            label="Password"
-            name="password"
-            type="password"
-            required
-            autoComplete="current-password"
-            value={form.password}
-            onChange={handleChange}
-            size="small"
-            sx={{ mb: 1 }}
-          />
-
-          {/* Forgot password link */}
-          <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 2.5 }}>
-            <Typography
-              variant="caption"
-              onClick={() => {
-                setResetForm({ email: form.email, new_password: '' });
-                setResetOpen(true);
-              }}
-              sx={{
-                color: theme.palette.primary.main,
-                fontWeight: 600,
-                cursor: 'pointer',
-                fontFamily: '"Inter", sans-serif',
-                '&:hover': { textDecoration: 'underline' },
-              }}
-            >
-              Forgot password?
-            </Typography>
-          </Box>
-
-          <Button
-            fullWidth
-            type="submit"
-            variant="contained"
-            disabled={loading}
-            sx={{ py: 1.25, fontSize: '0.875rem', fontFamily: '"Inter", sans-serif', borderRadius: '12px' }}
-          >
-            {loading ? 'Signing in…' : 'Sign in'}
-          </Button>
-        </Box>
-
-        <Divider sx={{ my: 3 }} />
-
-        <Typography
-          align="center"
-          variant="body2"
-          color="text.secondary"
-          sx={{ fontFamily: '"Inter", sans-serif' }}
-        >
-          Don't have an account?{' '}
-          <Link
-            to="/register"
-            style={{
-              color: theme.palette.primary.main,
-              fontWeight: 700,
-              textDecoration: 'none',
-              fontFamily: '"Inter", sans-serif',
+          {/* Logo Mark Icon only above Welcome Back */}
+          <Box
+            sx={{
+              width: 56,
+              height: 56,
+              borderRadius: '16px',
+              bgcolor: isDark ? 'rgba(56, 189, 248, 0.12)' : 'rgba(37, 99, 235, 0.08)',
+              border: `1px solid ${isDark ? 'rgba(56, 189, 248, 0.25)' : 'rgba(37, 99, 235, 0.15)'}`,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              mx: 'auto',
+              mb: 2.5,
             }}
           >
-            Create one
-          </Link>
-        </Typography>
+            <NexoraIcon size={32} />
+          </Box>
+
+          <Typography
+            variant="h4"
+            sx={{
+              fontFamily: '"Plus Jakarta Sans", "Inter", sans-serif',
+              fontWeight: 800,
+              color: theme.palette.text.primary,
+              letterSpacing: '-0.02em',
+              mb: 0.75,
+              fontSize: { xs: '1.45rem', sm: '1.65rem' },
+            }}
+          >
+            Welcome Back
+          </Typography>
+          <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.875rem', mb: 3.5 }}>
+            Please enter your details to sign in.
+          </Typography>
+
+          <Stack spacing={2.5} sx={{ textAlign: 'left' }}>
+            <Box>
+              <Typography variant="caption" fontWeight={700} color="text.secondary" sx={{ mb: 0.75, display: 'block', fontSize: '0.75rem', letterSpacing: '0.04em', textTransform: 'uppercase' }}>
+                Email
+              </Typography>
+              <TextField
+                fullWidth
+                name="email"
+                type="email"
+                required
+                placeholder="Enter your email"
+                autoComplete="email"
+                value={form.email}
+                onChange={handleChange}
+                size="small"
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <EmailOutlinedIcon sx={{ fontSize: 18, color: theme.palette.text.secondary }} />
+                    </InputAdornment>
+                  ),
+                }}
+                sx={{
+                  '& .MuiOutlinedInput-root': {
+                    borderRadius: '12px',
+                    fontSize: '0.875rem',
+                  },
+                }}
+              />
+            </Box>
+
+            <Box>
+              <Typography variant="caption" fontWeight={700} color="text.secondary" sx={{ mb: 0.75, display: 'block', fontSize: '0.75rem', letterSpacing: '0.04em', textTransform: 'uppercase' }}>
+                Password
+              </Typography>
+              <TextField
+                fullWidth
+                name="password"
+                type={showPassword ? 'text' : 'password'}
+                required
+                placeholder="Enter your password"
+                autoComplete="current-password"
+                value={form.password}
+                onChange={handleChange}
+                size="small"
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <LockOutlinedIcon sx={{ fontSize: 18, color: theme.palette.text.secondary }} />
+                    </InputAdornment>
+                  ),
+                  endAdornment: (
+                    <InputAdornment position="end">
+                      <IconButton
+                        size="small"
+                        onClick={() => setShowPassword((p) => !p)}
+                        edge="end"
+                        sx={{ color: theme.palette.text.secondary }}
+                      >
+                        {showPassword ? <VisibilityOff sx={{ fontSize: 18 }} /> : <Visibility sx={{ fontSize: 18 }} />}
+                      </IconButton>
+                    </InputAdornment>
+                  ),
+                }}
+                sx={{
+                  '& .MuiOutlinedInput-root': {
+                    borderRadius: '12px',
+                    fontSize: '0.875rem',
+                  },
+                }}
+              />
+              <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 0.85 }}>
+                <Typography
+                  variant="caption"
+                  onClick={() => {
+                    setResetForm({ email: form.email, new_password: '' });
+                    setResetOpen(true);
+                  }}
+                  sx={{
+                    color: primaryAccent,
+                    fontWeight: 700,
+                    cursor: 'pointer',
+                    fontSize: '0.8rem',
+                    '&:hover': { textDecoration: 'underline' },
+                  }}
+                >
+                  Forgot password?
+                </Typography>
+              </Box>
+            </Box>
+
+            <Button
+              fullWidth
+              type="submit"
+              variant="contained"
+              disabled={loading}
+              sx={{
+                py: 1.35,
+                mt: 1,
+                borderRadius: '12px',
+                fontSize: '0.9rem',
+                fontWeight: 700,
+                fontFamily: '"Inter", sans-serif',
+                textTransform: 'none',
+                background: 'linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%)',
+                boxShadow: '0 4px 14px rgba(37,99,235,0.25)',
+                transition: 'all 0.2s ease',
+                '&:hover': {
+                  background: 'linear-gradient(135deg, #1D4ED8 0%, #1E40AF 100%)',
+                  boxShadow: '0 6px 18px rgba(37,99,235,0.35)',
+                },
+              }}
+            >
+              {loading ? 'Signing in…' : 'Sign In'}
+            </Button>
+          </Stack>
+
+          <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.875rem', mt: 3 }}>
+            Don't have an account?{' '}
+            <Link
+              to="/register"
+              style={{
+                color: primaryAccent,
+                fontWeight: 800,
+                textDecoration: 'none',
+              }}
+            >
+              Create account
+            </Link>
+          </Typography>
+        </Paper>
       </Box>
 
       {/* Forgot Password Dialog Modal */}
       <Dialog
         open={resetOpen}
         onClose={() => setResetOpen(false)}
-        PaperProps={{ sx: { borderRadius: '16px', p: 1, maxWidth: 400, width: '100%' } }}
+        PaperProps={{
+          sx: {
+            borderRadius: '20px',
+            p: 1,
+            maxWidth: 400,
+            width: '100%',
+            backgroundColor: theme.palette.background.paper,
+            border: `1px solid ${theme.palette.divider}`,
+          },
+        }}
       >
-        <DialogTitle sx={{ fontWeight: 800, fontSize: '1.25rem', fontFamily: '"Inter", sans-serif' }}>
+        <DialogTitle sx={{ fontWeight: 800, fontSize: '1.2rem', fontFamily: '"Plus Jakarta Sans", sans-serif' }}>
           Reset Password
         </DialogTitle>
         <Box component="form" onSubmit={handleResetSubmit}>
           <DialogContent>
-            <Typography variant="body2" color="text.secondary" sx={{ mb: 2.5 }}>
-              Enter your registered account email and a new password below to reset your credentials.
+            <Typography variant="body2" color="text.secondary" sx={{ mb: 2.5, lineHeight: 1.5 }}>
+              Enter your account email and a new password below to reset credentials.
             </Typography>
 
             <Stack spacing={2}>
@@ -242,6 +325,7 @@ function Login() {
                 value={resetForm.email}
                 onChange={handleResetChange}
                 size="small"
+                sx={{ '& .MuiOutlinedInput-root': { borderRadius: '10px' } }}
               />
               <TextField
                 fullWidth
@@ -252,18 +336,25 @@ function Login() {
                 value={resetForm.new_password}
                 onChange={handleResetChange}
                 size="small"
+                sx={{ '& .MuiOutlinedInput-root': { borderRadius: '10px' } }}
               />
             </Stack>
           </DialogContent>
-          <DialogActions sx={{ px: 3, pb: 2 }}>
-            <Button onClick={() => setResetOpen(false)} sx={{ textTransform: 'none', color: 'text.secondary' }}>
+          <DialogActions sx={{ px: 3, pb: 2.5 }}>
+            <Button onClick={() => setResetOpen(false)} sx={{ textTransform: 'none', color: 'text.secondary', fontWeight: 600 }}>
               Cancel
             </Button>
             <Button
               type="submit"
               variant="contained"
               disabled={resetLoading}
-              sx={{ borderRadius: '10px', textTransform: 'none', px: 3 }}
+              sx={{
+                borderRadius: '10px',
+                textTransform: 'none',
+                px: 3,
+                fontWeight: 700,
+                background: 'linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%)',
+              }}
             >
               {resetLoading ? 'Resetting…' : 'Reset Password'}
             </Button>

@@ -1,75 +1,74 @@
-// Nexora vibrant AI color palette — Premium Glassmorphism & High-Tech Aesthetics
+// Nexora AI Executive Color Palette — Modern Clean Corporate Aesthetics
 
 export const colors = {
   primary: {
-    main: '#2563EB', // Vibrant Tech Blue
+    main: '#2563EB', // Primary Accent Blue
     light: '#3B82F6',
     dark: '#1D4ED8',
     contrastText: '#FFFFFF',
   },
   secondary: {
-    main: '#7C3AED', // AI Violet
-    light: '#8B5CF6',
-    dark: '#6D28D9',
+    main: '#475569', // Secondary Text Slate
+    light: '#64748B',
+    dark: '#0F172A',
     contrastText: '#FFFFFF',
   },
   accent: {
-    main: '#EC4899', // Pinkish Pulse Accent
-    light: '#F472B6',
-    dark: '#DB2777',
+    main: '#2563EB',
+    light: '#EFF6FF',
+    dark: '#1D4ED8',
     contrastText: '#FFFFFF',
   },
   success: {
-    main: '#10B981', // Emerald Green
-    light: '#34D399',
-    dark: '#059669',
+    main: '#059669',
     contrastText: '#FFFFFF',
   },
   warning: {
-    main: '#F59E0B',
+    main: '#D97706',
     contrastText: '#FFFFFF',
   },
   danger: {
-    main: '#EF4444',
+    main: '#DC2626',
     contrastText: '#FFFFFF',
   },
   background: {
-    default: '#F8FAFC', // Crisp Slate White
-    paper: '#FFFFFF',
-    glass: 'rgba(255, 255, 255, 0.85)',
+    default: '#F8FAFC', // Crisp Light Background
+    paper: '#FFFFFF',   // Surface
+    glass: 'rgba(255, 255, 255, 0.95)',
   },
   text: {
-    primary: '#0F172A',
-    secondary: '#64748B',
+    primary: '#0F172A',   // Slate 900
+    secondary: '#475569', // Slate 600
+    muted: '#64748B',     // Slate 500
     disabled: '#94A3B8',
   },
-  divider: 'rgba(226, 232, 240, 0.8)',
+  divider: '#E2E8F0',
   border: '#E2E8F0',
   gradient: {
-    primary: 'linear-gradient(135deg, #2563EB 0%, #7C3AED 100%)',
-    brand: 'linear-gradient(135deg, #2563EB 0%, #7C3AED 50%, #EC4899 100%)',
-    glass: 'linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(248, 250, 252, 0.75) 100%)',
-    hero: 'linear-gradient(135deg, #0F172A 0%, #1E1B4B 50%, #311042 100%)',
+    primary: 'linear-gradient(135deg, #0F172A 0%, #1E293B 100%)',
+    brand: 'linear-gradient(135deg, #2563EB 0%, #0F172A 100%)',
+    glass: 'linear-gradient(135deg, rgba(255, 255, 255, 0.98) 0%, rgba(248, 250, 252, 0.9) 100%)',
+    hero: 'linear-gradient(135deg, #0F172A 0%, #1E293B 100%)',
   }
 };
 
 export const darkColors = {
   primary: {
-    main: '#3B82F6',
+    main: '#3B82F6', // Dark Mode Accent Blue
     light: '#60A5FA',
     dark: '#2563EB',
-    contrastText: '#FFFFFF',
+    contrastText: '#F8FAFC',
   },
   secondary: {
-    main: '#A78BFA',
-    light: '#C4B5FD',
-    dark: '#7C3AED',
-    contrastText: '#FFFFFF',
+    main: '#CBD5E1',
+    light: '#F8FAFC',
+    dark: '#94A3B8',
+    contrastText: '#0B0F19',
   },
   accent: {
-    main: '#F472B6',
-    light: '#FBCFE8',
-    dark: '#E11D48',
+    main: '#3B82F6',
+    light: '#172033',
+    dark: '#2563EB',
     contrastText: '#FFFFFF',
   },
   success: {
@@ -85,22 +84,25 @@ export const darkColors = {
     contrastText: '#FFFFFF',
   },
   background: {
-    default: '#090D16', // Deep Space Background
-    paper: '#111827',   // Dark Glass Paper
-    glass: 'rgba(17, 24, 39, 0.85)',
+    default: '#0B0F19', // Premium Dark Background
+    paper: '#111827',   // Surface
+    secondaryPaper: '#172033', // Secondary Surface
+    glass: 'rgba(17, 24, 39, 0.95)',
   },
   text: {
     primary: '#F8FAFC',
-    secondary: '#94A3B8',
+    secondary: '#CBD5E1',
+    muted: '#94A3B8',
     disabled: '#64748B',
   },
-  divider: 'rgba(30, 41, 59, 0.8)',
+  divider: '#1E293B',
   border: '#1E293B',
   gradient: {
-    primary: 'linear-gradient(135deg, #3B82F6 0%, #8B5CF6 100%)',
-    brand: 'linear-gradient(135deg, #60A5FA 0%, #A78BFA 50%, #F472B6 100%)',
-    glass: 'linear-gradient(135deg, rgba(17, 24, 39, 0.9) 0%, rgba(15, 23, 42, 0.75) 100%)',
-    hero: 'linear-gradient(135deg, #090D16 0%, #111827 50%, #1E1B4B 100%)',
+    primary: 'linear-gradient(135deg, #3B82F6 0%, #1D4ED8 100%)',
+    brand: 'linear-gradient(135deg, #3B82F6 0%, #172033 100%)',
+    glass: 'linear-gradient(135deg, rgba(17, 24, 39, 0.95) 0%, rgba(11, 15, 25, 0.85) 100%)',
+    hero: 'linear-gradient(135deg, #0B0F19 0%, #111827 100%)',
   }
 };
+
 

@@ -102,7 +102,8 @@ def get_user_analytics(user_id):
             "total_likes": total_likes,
             "total_dislikes": total_dislikes,
             "favorite_category": favorite_category,
-            "favorite_author": favorite_author
+            "favorite_author": favorite_author,
+            "category_distribution": category_count
         },
         "status_code": 200
     }

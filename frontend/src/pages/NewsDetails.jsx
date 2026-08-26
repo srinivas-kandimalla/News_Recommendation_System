@@ -23,6 +23,8 @@ import BookmarkBorderIcon from '@mui/icons-material/BookmarkBorder';
 import BookmarkIcon from '@mui/icons-material/Bookmark';
 import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
 import FavoriteIcon from '@mui/icons-material/Favorite';
+import ThumbDownOffAltIcon from '@mui/icons-material/ThumbDownOffAlt';
+import ThumbDownIcon from '@mui/icons-material/ThumbDown';
 import ShareIcon from '@mui/icons-material/Share';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import CloseIcon from '@mui/icons-material/Close';
@@ -31,7 +33,10 @@ import ArticleIcon from '@mui/icons-material/Article';
 import {
   getNewsById,
   bookmarkNews,
+  removeBookmark,
+  getBookmarks,
   likeNews,
+  dislikeNews,
   recordReadingHistory,
 } from '../services/newsService';
 import { useAuth } from '../context/AuthContext';
@@ -52,17 +57,29 @@ function NewsDetails() {
   const [loading, setLoading] = useState(true);
   const [bookmarked, setBookmarked] = useState(false);
   const [liked, setLiked] = useState(false);
+  const [disliked, setDisliked] = useState(false);
   const [readerOpen, setReaderOpen] = useState(false);
   const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
 
   const showMsg = (message, severity = 'success') =>
     setSnackbar({ open: true, message, severity });
 
-  useEffect(() => { fetchArticle(); }, [id]);
+  useEffect(() => {
+    fetchArticle();
+  }, [id]);
 
   useEffect(() => {
     if (news && isAuthenticated && token) {
       recordReadingHistory(news._id, token).catch(() => {});
+      // Fetch initial bookmark status
+      getBookmarks(token)
+        .then((res) => {
+          if (res.success && res.bookmarks) {
+            const isBookmarked = res.bookmarks.some((b) => String(b._id) === String(news._id));
+            setBookmarked(isBookmarked);
+          }
+        })
+        .catch(() => {});
     }
   }, [news, isAuthenticated, token]);
 
@@ -90,9 +107,15 @@ function NewsDetails() {
       return;
     }
     try {
-      const res = await bookmarkNews(targetId, token);
-      setBookmarked((p) => !p);
-      showMsg(res.message || 'Bookmark updated.');
+      if (bookmarked) {
+        const res = await removeBookmark(targetId, token);
+        setBookmarked(false);
+        showMsg(res.message || 'Bookmark removed.');
+      } else {
+        const res = await bookmarkNews(targetId, token);
+        setBookmarked(true);
+        showMsg(res.message || 'Bookmark added.');
+      }
     } catch (err) {
       if (err?.response?.status === 401 || err?.response?.status === 403) {
         showMsg('Session expired. Please sign in again.', 'info');
@@ -116,8 +139,10 @@ function NewsDetails() {
     }
     try {
       const res = await likeNews(targetId, token);
-      setLiked((p) => !p);
-      showMsg(res.message || 'Reaction saved.');
+      const isNowLiked = res.message?.toLowerCase().includes('added') || res.message?.toLowerCase().includes('like');
+      setLiked(isNowLiked && !res.message?.toLowerCase().includes('removed'));
+      if (isNowLiked) setDisliked(false);
+      showMsg(res.message || 'Reaction updated.');
     } catch (err) {
       if (err?.response?.status === 401 || err?.response?.status === 403) {
         showMsg('Session expired. Please sign in again.', 'info');
@@ -128,12 +153,43 @@ function NewsDetails() {
     }
   };
 
-  const handleShare = () => {
-    if (navigator.share) {
-      navigator.share({ title: news?.title, url: window.location.href }).catch(() => {});
-    } else {
-      navigator.clipboard.writeText(window.location.href);
-      showMsg('Link copied to clipboard.');
+  const handleDislike = async () => {
+    if (!isAuthenticated || !token) {
+      showMsg('Please sign in to react to stories.', 'info');
+      setTimeout(() => navigate('/login'), 1200);
+      return;
+    }
+    const targetId = news?._id || news?.id || id;
+    if (!targetId) {
+      showMsg('Article identifier missing.', 'error');
+      return;
+    }
+    try {
+      const res = await dislikeNews(targetId, token);
+      const isNowDisliked = res.message?.toLowerCase().includes('added') || res.message?.toLowerCase().includes('dislike');
+      setDisliked(isNowDisliked && !res.message?.toLowerCase().includes('removed'));
+      if (isNowDisliked) setLiked(false);
+      showMsg(res.message || 'Reaction updated.');
+    } catch (err) {
+      if (err?.response?.status === 401 || err?.response?.status === 403) {
+        showMsg('Session expired. Please sign in again.', 'info');
+        setTimeout(() => navigate('/login'), 1200);
+      } else {
+        showMsg(err?.response?.data?.message || 'Failed to save reaction.', 'error');
+      }
+    }
+  };
+
+  const handleShare = async () => {
+    try {
+      if (navigator.share) {
+        await navigator.share({ title: news?.title, url: window.location.href });
+      } else {
+        await navigator.clipboard.writeText(window.location.href);
+        showMsg('Story link copied to clipboard!');
+      }
+    } catch {
+      showMsg('Story link copied to clipboard!');
     }
   };
 
@@ -141,18 +197,28 @@ function NewsDetails() {
     <Stack direction="row" spacing={1} alignItems="center">
       <IconButton
         onClick={handleLike}
-        sx={{ color: liked ? '#C0392B' : theme.palette.text.secondary, borderRadius: 1 }}
+        title="Like story"
+        sx={{ color: liked ? (theme.palette.mode === 'dark' ? '#38BDF8' : '#2563EB') : theme.palette.text.secondary, borderRadius: 1 }}
       >
         {liked ? <FavoriteIcon sx={{ fontSize: 20 }} /> : <FavoriteBorderIcon sx={{ fontSize: 20 }} />}
       </IconButton>
       <IconButton
+        onClick={handleDislike}
+        title="Dislike story"
+        sx={{ color: disliked ? '#EF4444' : theme.palette.text.secondary, borderRadius: 1 }}
+      >
+        {disliked ? <ThumbDownIcon sx={{ fontSize: 20 }} /> : <ThumbDownOffAltIcon sx={{ fontSize: 20 }} />}
+      </IconButton>
+      <IconButton
         onClick={handleBookmark}
+        title="Bookmark story"
         sx={{ color: bookmarked ? theme.palette.text.primary : theme.palette.text.secondary, borderRadius: 1 }}
       >
         {bookmarked ? <BookmarkIcon sx={{ fontSize: 20 }} /> : <BookmarkBorderIcon sx={{ fontSize: 20 }} />}
       </IconButton>
       <IconButton
         onClick={handleShare}
+        title="Share story"
         sx={{ color: theme.palette.text.secondary, borderRadius: 1 }}
       >
         <ShareIcon sx={{ fontSize: 20 }} />
@@ -207,9 +273,17 @@ function NewsDetails() {
     );
   }
 
-  const formattedDate = news.created_at
-    ? new Date(news.created_at).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })
-    : '';
+  const rawDate = news?.published || news?.published_at || news?.created_at || news?.date;
+  let formattedDate = '';
+  if (rawDate) {
+    try {
+      const d = new Date(rawDate);
+      if (!isNaN(d.getTime())) {
+        formattedDate = d.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+      }
+    } catch {}
+  }
+  const cleanSource = (news?.source || news?.author || 'Nexora').split('-')[0].split('|')[0].trim() || 'Nexora';
 
   return (
     <Box sx={{ backgroundColor: theme.palette.background.default, minHeight: '100vh', pb: 8 }}>
@@ -268,7 +342,7 @@ function NewsDetails() {
           {news.title}
         </Typography>
 
-        {/* Source + date + actions */}
+        {/* Source + date + read time + actions */}
         <Stack
           direction="row"
           alignItems="center"
@@ -277,10 +351,31 @@ function NewsDetails() {
           gap={1}
           sx={{ mb: 3 }}
         >
-          <Typography variant="body2" color="text.secondary" sx={{ fontFamily: '"Inter", sans-serif' }}>
-            {news.source || news.author || 'Nexora'}
-            {formattedDate && ` · ${formattedDate}`}
-          </Typography>
+          <Stack direction="row" alignItems="center" spacing={1} flexWrap="wrap">
+            <Typography variant="body2" color="text.secondary" sx={{ fontFamily: '"Inter", sans-serif', fontWeight: 500 }}>
+              {news.source || news.author || 'Nexora'}
+              {formattedDate && ` · ${formattedDate}`}
+            </Typography>
+            {(() => {
+              const wordCount = (news.content || news.description || '').split(/\s+/).length;
+              const readTime = Math.max(1, Math.ceil(wordCount / 200));
+              return (
+                <Chip
+                  label={`⏱ ${readTime} min read`}
+                  size="small"
+                  sx={{
+                    fontFamily: '"Inter", sans-serif',
+                    fontSize: '0.72rem',
+                    fontWeight: 600,
+                    height: 22,
+                    bgcolor: theme.palette.mode === 'dark' ? 'rgba(56, 189, 248, 0.1)' : 'rgba(37, 99, 235, 0.08)',
+                    color: theme.palette.mode === 'dark' ? '#38BDF8' : '#2563EB',
+                    border: `1px solid ${theme.palette.mode === 'dark' ? 'rgba(56, 189, 248, 0.25)' : 'rgba(37, 99, 235, 0.18)'}`,
+                  }}
+                />
+              );
+            })()}
+          </Stack>
           <ActionBar />
         </Stack>
 
@@ -307,11 +402,89 @@ function NewsDetails() {
         {/* Article body */}
         <Box
           sx={{
-            maxWidth: 760,
+            maxWidth: 740,
             mx: 'auto',
           }}
         >
-          {/* Main Content Paragraphs */}
+          {/* Executive Summary / Highlights Box */}
+          {(() => {
+            const rawContent = news.content || news.description || '';
+            const cleanedContent = rawContent.replace(/\s*\[\+?\d+\s+chars\]/gi, '').trim();
+            const paragraphs = cleanedContent.split(/\n\s*\n/).filter(Boolean);
+            if (paragraphs.length === 0) return null;
+
+            // Extract key highlights from content
+            const highlights = paragraphs
+              .slice(0, 3)
+              .map((p) => p.split('. ')[0].replace(/^[A-Z\s]+—\s*/, '').trim())
+              .filter((h) => h.length > 20 && h.length < 160);
+
+            return (
+              <Box
+                sx={{
+                  mb: 4,
+                  p: { xs: 2.5, md: 3 },
+                  borderRadius: '12px',
+                  backgroundColor: theme.palette.mode === 'dark' ? 'rgba(30, 41, 59, 0.4)' : 'rgba(241, 245, 249, 0.75)',
+                  borderLeft: `4px solid ${theme.palette.mode === 'dark' ? '#38BDF8' : '#2563EB'}`,
+                  borderTop: `1px solid ${theme.palette.divider}`,
+                  borderRight: `1px solid ${theme.palette.divider}`,
+                  borderBottom: `1px solid ${theme.palette.divider}`,
+                }}
+              >
+                <Typography
+                  variant="caption"
+                  fontWeight={800}
+                  letterSpacing="0.1em"
+                  sx={{
+                    color: theme.palette.mode === 'dark' ? '#38BDF8' : '#2563EB',
+                    textTransform: 'uppercase',
+                    display: 'block',
+                    mb: 1.5,
+                  }}
+                >
+                  ⚡ STORY HIGHLIGHTS
+                </Typography>
+                <Stack spacing={1}>
+                  {highlights.length > 0 ? (
+                    highlights.map((item, idx) => (
+                      <Typography
+                        key={idx}
+                        variant="body2"
+                        fontWeight={600}
+                        color="text.primary"
+                        sx={{
+                          display: 'flex',
+                          alignItems: 'flex-start',
+                          gap: 1.25,
+                          lineHeight: 1.6,
+                        }}
+                      >
+                        <Box
+                          component="span"
+                          sx={{
+                            width: 6,
+                            height: 6,
+                            borderRadius: '50%',
+                            bgcolor: theme.palette.mode === 'dark' ? '#38BDF8' : '#2563EB',
+                            mt: 0.9,
+                            flexShrink: 0,
+                          }}
+                        />
+                        {item}.
+                      </Typography>
+                    ))
+                  ) : (
+                    <Typography variant="body2" color="text.secondary">
+                      {paragraphs[0].slice(0, 180)}...
+                    </Typography>
+                  )}
+                </Stack>
+              </Box>
+            );
+          })()}
+
+          {/* Main Content Paragraphs with Editorial Formatting */}
           {(() => {
             const rawContent = news.content || news.description || '';
             const cleanedContent = rawContent.replace(/\s*\[\+?\d+\s+chars\]/gi, '').trim();
@@ -319,22 +492,59 @@ function NewsDetails() {
 
             return (
               <Box sx={{ mb: 4 }}>
-                {paragraphs.map((p, idx) => (
-                  <Typography
-                    key={idx}
-                    component="p"
-                    sx={{
-                      fontFamily: '"Inter", sans-serif',
-                      fontSize: { xs: '1.05rem', md: '1.125rem' },
-                      lineHeight: 1.85,
-                      color: theme.palette.text.primary,
-                      mb: 2.5,
-                      letterSpacing: '-0.01em',
-                    }}
-                  >
-                    {p}
-                  </Typography>
-                ))}
+                {paragraphs.map((p, idx) => {
+                  const isLead = idx === 0;
+                  const isPullQuote = idx === 2 && paragraphs.length > 3;
+
+                  if (isPullQuote) {
+                    return (
+                      <Box
+                        key={idx}
+                        sx={{
+                          my: 4,
+                          py: 2,
+                          px: 3,
+                          borderLeft: `4px solid ${theme.palette.mode === 'dark' ? '#38BDF8' : '#2563EB'}`,
+                          backgroundColor: theme.palette.mode === 'dark' ? 'rgba(56, 189, 248, 0.05)' : 'rgba(37, 99, 235, 0.03)',
+                          borderRadius: '0 8px 8px 0',
+                        }}
+                      >
+                        <Typography
+                          variant="h6"
+                          sx={{
+                            fontFamily: '"Merriweather", "Georgia", serif',
+                            fontStyle: 'italic',
+                            fontWeight: 600,
+                            lineHeight: 1.6,
+                            color: theme.palette.text.primary,
+                          }}
+                        >
+                          "{p}"
+                        </Typography>
+                      </Box>
+                    );
+                  }
+
+                  return (
+                    <Typography
+                      key={idx}
+                      component="p"
+                      sx={{
+                        fontFamily: isLead ? '"Merriweather", "Georgia", serif' : '"Inter", -apple-system, sans-serif',
+                        fontSize: isLead ? { xs: '1.125rem', md: '1.22rem' } : { xs: '1.05rem', md: '1.125rem' },
+                        fontWeight: isLead ? 500 : 400,
+                        lineHeight: isLead ? 1.9 : 1.85,
+                        color: isLead
+                          ? theme.palette.text.primary
+                          : theme.palette.mode === 'dark' ? '#E2E8F0' : '#1E293B',
+                        mb: 3,
+                        letterSpacing: '-0.005em',
+                      }}
+                    >
+                      {p}
+                    </Typography>
+                  );
+                })}
               </Box>
             );
           })()}

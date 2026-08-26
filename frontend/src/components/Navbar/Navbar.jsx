@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   AppBar,
   Toolbar,
@@ -21,32 +21,7 @@ import { useThemeMode } from '../../context/ThemeContext';
 import { useAuth } from '../../context/AuthContext';
 import ProfileMenu from './ProfileMenu';
 import MobileDrawer from './MobileDrawer';
-import { searchNews } from '../../services/newsService';
-
-// Futuristic Nexora AI Logo — Sparkle & Neural Pulse
-const NexoraIcon = ({ size = 26 }) => (
-  <svg
-    width={size}
-    height={size}
-    viewBox="0 0 32 32"
-    fill="none"
-    xmlns="http://www.w3.org/2000/svg"
-    style={{ flexShrink: 0 }}
-  >
-    <defs>
-      <linearGradient id="nexoraGrad" x1="0" y1="0" x2="32" y2="32" gradientUnits="userSpaceOnUse">
-        <stop stopColor="#2563EB" />
-        <stop offset="0.5" stopColor="#7C3AED" />
-        <stop offset="1" stopColor="#EC4899" />
-      </linearGradient>
-    </defs>
-    <rect width="32" height="32" rx="10" fill="url(#nexoraGrad)" />
-    <path
-      d="M16 6L18.5 13.5L26 16L18.5 18.5L16 26L13.5 18.5L6 16L13.5 13.5L16 6Z"
-      fill="white"
-    />
-  </svg>
-);
+import NexoraLogo from '../common/NexoraLogo';
 
 const NAV_LINKS = [
   { label: 'Home', to: '/' },
@@ -66,6 +41,17 @@ const Navbar = () => {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchValue, setSearchValue] = useState('');
+
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+        e.preventDefault();
+        setSearchOpen((prev) => !prev);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
 
   const handleSearchSubmit = (e) => {
     e.preventDefault();
@@ -131,36 +117,9 @@ const Navbar = () => {
             </IconButton>
           )}
 
-          {/* Logo: AI Spark Icon + Nexora Gradient Wordmark */}
-          <Box
-            component={NavLink}
-            to="/"
-            sx={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: 1.25,
-              textDecoration: 'none',
-              flexShrink: 0,
-              mr: { xs: 'auto', md: 4 },
-            }}
-          >
-            <NexoraIcon size={30} />
-            <Typography
-              sx={{
-                fontFamily: '"Plus Jakarta Sans", "Inter", sans-serif',
-                fontWeight: 800,
-                fontSize: { xs: '1.35rem', md: '1.5rem' },
-                background: isDark
-                  ? 'linear-gradient(135deg, #60A5FA 0%, #C4B5FD 50%, #F472B6 100%)'
-                  : 'linear-gradient(135deg, #2563EB 0%, #7C3AED 50%, #EC4899 100%)',
-                WebkitBackgroundClip: 'text',
-                WebkitTextFillColor: 'transparent',
-                letterSpacing: '-0.03em',
-                lineHeight: 1,
-              }}
-            >
-              Nexora
-            </Typography>
+          {/* Logo: Custom Signature Nexora Logo Emblem + Wordmark */}
+          <Box sx={{ mr: { xs: 'auto', md: 4 } }}>
+            <NexoraLogo size={32} fontSize="1.45rem" />
           </Box>
 
           {/* Desktop nav links */}

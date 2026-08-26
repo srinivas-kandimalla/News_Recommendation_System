@@ -79,7 +79,14 @@ function Bookmarks() {
 
   return (
     <Box sx={{ backgroundColor: theme.palette.background.default, minHeight: '100vh', pb: 6 }}>
-      <Container maxWidth="lg" sx={{ pt: { xs: 3, md: 4 }, px: { xs: 2, md: 3 } }}>
+      <Box
+        sx={{
+          maxWidth: 1280,
+          mx: 'auto',
+          px: { xs: 2, sm: 3, md: 4 },
+          pt: { xs: 3, md: 4 },
+        }}
+      >
 
         {/* Header */}
         <Box sx={{ mb: 3 }}>
@@ -108,60 +115,77 @@ function Bookmarks() {
           {loading ? 'Loading…' : `${bookmarks.length} saved ${bookmarks.length === 1 ? 'story' : 'stories'}`}
         </Typography>
 
-        <Grid container spacing={3}>
-          {loading ? (
-            Array.from({ length: 6 }).map((_, i) => (
-              <Grid item xs={12} sm={6} md={4} key={i}>
-                <NewsCardSkeleton variant="standard" />
-              </Grid>
-            ))
-          ) : bookmarks.length > 0 ? (
-            bookmarks.map((item) => (
-              <Grid item xs={12} sm={6} md={4} key={item._id}>
-                <NewsCard
-                  news={item}
-                  variant="standard"
-                  isBookmarked={true}
-                  onBookmark={() => setConfirmId(item._id)}
-                  onClick={() => navigate(`/news/${item._id}`)}
-                />
-              </Grid>
-            ))
-          ) : (
-            <Grid item xs={12}>
-              <Box sx={{ py: 8, textAlign: 'center' }}>
-                <Typography
-                  variant="h5"
-                  sx={{ fontFamily: '"Playfair Display", Georgia, serif', fontWeight: 700, mb: 1, color: theme.palette.text.primary }}
-                >
-                  No saved stories yet
-                </Typography>
-                <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-                  Tap the bookmark icon on any story to save it here.
-                </Typography>
-                <Box
-                  onClick={() => navigate('/')}
-                  sx={{
-                    display: 'inline-block',
-                    px: 3,
-                    py: 1.25,
-                    border: `1px solid ${theme.palette.text.primary}`,
-                    borderRadius: 1,
-                    cursor: 'pointer',
-                    fontFamily: '"Inter", sans-serif',
-                    fontWeight: 500,
-                    fontSize: '0.875rem',
-                    color: theme.palette.text.primary,
-                    '&:hover': { backgroundColor: theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.04)' },
-                  }}
-                >
-                  Browse news
-                </Box>
-              </Box>
-            </Grid>
-          )}
-        </Grid>
-      </Container>
+        {loading ? (
+          <Box
+            sx={{
+              display: 'grid',
+              gridTemplateColumns: {
+                xs: '1fr',
+                sm: 'repeat(2, 1fr)',
+                md: 'repeat(3, 1fr)',
+              },
+              gap: 3,
+            }}
+          >
+            {Array.from({ length: 6 }).map((_, i) => (
+              <NewsCardSkeleton key={i} variant="standard" />
+            ))}
+          </Box>
+        ) : bookmarks.length > 0 ? (
+          <Box
+            sx={{
+              display: 'grid',
+              gridTemplateColumns: {
+                xs: '1fr',
+                sm: 'repeat(2, 1fr)',
+                md: 'repeat(3, 1fr)',
+              },
+              gap: 3,
+            }}
+          >
+            {bookmarks.map((item) => (
+              <NewsCard
+                key={item._id}
+                news={item}
+                variant="standard"
+                isBookmarked={true}
+                onBookmark={() => setConfirmId(item._id)}
+                onClick={() => navigate(`/news/${item._id}`)}
+              />
+            ))}
+          </Box>
+        ) : (
+          <Box sx={{ py: 8, textAlign: 'center' }}>
+            <Typography
+              variant="h5"
+              sx={{ fontFamily: '"Playfair Display", Georgia, serif', fontWeight: 700, mb: 1, color: theme.palette.text.primary }}
+            >
+              No saved stories yet
+            </Typography>
+            <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+              Tap the bookmark icon on any story to save it here.
+            </Typography>
+            <Box
+              onClick={() => navigate('/')}
+              sx={{
+                display: 'inline-block',
+                px: 3,
+                py: 1.25,
+                border: `1px solid ${theme.palette.text.primary}`,
+                borderRadius: 1,
+                cursor: 'pointer',
+                fontFamily: '"Inter", sans-serif',
+                fontWeight: 500,
+                fontSize: '0.875rem',
+                color: theme.palette.text.primary,
+                '&:hover': { backgroundColor: theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.04)' },
+              }}
+            >
+              Browse news
+            </Box>
+          </Box>
+        )}
+      </Box>
 
       {/* Remove confirm dialog */}
       <Dialog open={Boolean(confirmId)} onClose={() => setConfirmId(null)}>

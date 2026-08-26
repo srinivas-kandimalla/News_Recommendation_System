@@ -9,6 +9,7 @@ import {
   Divider,
   Stack,
   LinearProgress,
+  Paper,
 } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 
@@ -82,7 +83,14 @@ function Recommendations() {
 
   return (
     <Box sx={{ backgroundColor: theme.palette.background.default, minHeight: '100vh', pb: 6 }}>
-      <Container maxWidth="lg" sx={{ pt: { xs: 3, md: 4 }, px: { xs: 2, md: 3 } }}>
+      <Box
+        sx={{
+          maxWidth: 1280,
+          mx: 'auto',
+          px: { xs: 2, sm: 3, md: 4 },
+          pt: { xs: 3, md: 4 },
+        }}
+      >
 
         {/* Header */}
         <Box sx={{ mb: 3 }}>
@@ -105,167 +113,129 @@ function Recommendations() {
 
         {error && <Alert severity="error" sx={{ mb: 3 }}>{error}</Alert>}
 
-        <Grid container spacing={5}>
-          {/* Left: recommendations feed */}
-          <Grid item xs={12} md={8}>
-            <Typography sx={{ ...sectionLabel, mb: 2 }}>Your Feed</Typography>
-
-            <Grid container spacing={3}>
-              {loading ? (
-                Array.from({ length: 6 }).map((_, i) => (
-                  <Grid item xs={12} sm={6} key={i}>
-                    <NewsCardSkeleton variant="standard" />
-                  </Grid>
-                ))
-              ) : recommendations.length > 0 ? (
-                recommendations.map((item) => (
-                  <Grid item xs={12} sm={6} key={item._id}>
-                    <NewsCard
-                      news={item}
-                      variant="standard"
-                      showReason={true}
-                      onBookmark={handleBookmark}
-                      onLike={handleLike}
-                      onClick={() => navigate(`/news/${item._id}`)}
-                    />
-                  </Grid>
-                ))
-              ) : !loading && (
-                <Grid item xs={12}>
-                  <Box sx={{ py: 6, textAlign: 'center' }}>
-                    <Typography variant="h5" sx={{ fontFamily: '"Playfair Display", Georgia, serif', fontWeight: 700, mb: 1 }}>
-                      No recommendations yet
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-                      Read a few articles on the home feed and Nexora will learn your interests.
-                    </Typography>
-                    <Box
-                      onClick={() => navigate('/')}
-                      sx={{
-                        display: 'inline-block',
-                        px: 3,
-                        py: 1.25,
-                        border: `1px solid ${theme.palette.text.primary}`,
-                        borderRadius: 1,
-                        cursor: 'pointer',
-                        fontFamily: '"Inter", sans-serif',
-                        fontWeight: 500,
-                        fontSize: '0.875rem',
-                        color: theme.palette.text.primary,
-                        '&:hover': { backgroundColor: theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.04)' },
-                      }}
-                    >
-                      Browse news
-                    </Box>
-                  </Box>
+        {/* Top Reading Pulse Banner */}
+        {analytics && (
+          <Paper
+            elevation={0}
+            sx={{
+              p: 2.5,
+              mb: 4,
+              borderRadius: '12px',
+              border: `1px solid ${theme.palette.divider}`,
+              backgroundColor: theme.palette.mode === 'dark' ? '#111827' : '#FFFFFF',
+            }}
+          >
+            <Grid container spacing={3} alignItems="center">
+              <Grid item xs={6} sm={3}>
+                <Typography variant="caption" color="text.secondary" fontWeight={600} display="block">
+                  ARTICLES READ
+                </Typography>
+                <Typography variant="h5" fontWeight={800} color={theme.palette.text.primary}>
+                  {analytics.total_articles_read ?? 0}
+                </Typography>
+              </Grid>
+              <Grid item xs={6} sm={3}>
+                <Typography variant="caption" color="text.secondary" fontWeight={600} display="block">
+                  BOOKMARKS
+                </Typography>
+                <Typography variant="h5" fontWeight={800} color={theme.palette.text.primary}>
+                  {analytics.total_bookmarks ?? 0}
+                </Typography>
+              </Grid>
+              <Grid item xs={6} sm={3}>
+                <Typography variant="caption" color="text.secondary" fontWeight={600} display="block">
+                  LIKES
+                </Typography>
+                <Typography variant="h5" fontWeight={800} color={theme.palette.mode === 'dark' ? '#38BDF8' : '#2563EB'}>
+                  {analytics.total_likes ?? 0}
+                </Typography>
+              </Grid>
+              {analytics.favorite_category && (
+                <Grid item xs={6} sm={3}>
+                  <Typography variant="caption" color="text.secondary" fontWeight={600} display="block">
+                    TOP FOCUS CATEGORY
+                  </Typography>
+                  <Typography variant="h6" fontWeight={800} color={theme.palette.mode === 'dark' ? '#38BDF8' : '#2563EB'}>
+                    {analytics.favorite_category}
+                  </Typography>
                 </Grid>
               )}
             </Grid>
-          </Grid>
+          </Paper>
+        )}
 
-          {/* Right: reading pulse sidebar */}
-          <Grid item xs={12} md={4}>
-            <Box sx={{ position: { md: 'sticky' }, top: 72 }}>
-              <Typography sx={{ ...sectionLabel, mb: 2 }}>Your Reading Pulse</Typography>
+        {/* 3-column recommendation story grid */}
+        <Typography sx={{ ...sectionLabel, mb: 2 }}>Your Personalized Feed</Typography>
 
-              {analytics ? (
-                <Box
-                  sx={{
-                    border: `1px solid ${theme.palette.divider}`,
-                    borderRadius: 1,
-                    p: 2.5,
-                  }}
-                >
-                  {/* Stats row */}
-                  <Grid container spacing={2} sx={{ mb: 2.5 }}>
-                    {[
-                      { label: 'Articles read', value: analytics.total_articles_read ?? '—' },
-                      { label: 'Bookmarks', value: analytics.total_bookmarks ?? '—' },
-                      { label: 'Likes', value: analytics.total_likes ?? '—' },
-                    ].map(({ label, value }) => (
-                      <Grid item xs={4} key={label}>
-                        <Typography sx={{
-                          fontFamily: '"Playfair Display", Georgia, serif',
-                          fontWeight: 700,
-                          fontSize: '1.5rem',
-                          color: theme.palette.text.primary,
-                          lineHeight: 1,
-                          mb: 0.25,
-                        }}>
-                          {value}
-                        </Typography>
-                        <Typography variant="caption" color="text.secondary">{label}</Typography>
-                      </Grid>
-                    ))}
-                  </Grid>
-
-                  <Divider sx={{ mb: 2 }} />
-
-                  {/* Category breakdown */}
-                  {categoryDist.length > 0 ? (
-                    <Stack spacing={1.5}>
-                      {categoryDist.map(([cat, count]) => {
-                        const pct = totalReads > 0 ? Math.round((count / totalReads) * 100) : 0;
-                        return (
-                          <Box key={cat}>
-                            <Stack direction="row" justifyContent="space-between" sx={{ mb: 0.5 }}>
-                              <Typography variant="caption" sx={{ fontFamily: '"Inter", sans-serif', fontWeight: 500, color: theme.palette.text.primary }}>
-                                {cat}
-                              </Typography>
-                              <Typography variant="caption" color="text.secondary">{pct}%</Typography>
-                            </Stack>
-                            <LinearProgress
-                              variant="determinate"
-                              value={pct}
-                              sx={{
-                                height: 3,
-                                borderRadius: 0,
-                                backgroundColor: theme.palette.divider,
-                                '& .MuiLinearProgress-bar': {
-                                  backgroundColor: theme.palette.text.primary,
-                                  borderRadius: 0,
-                                },
-                              }}
-                            />
-                          </Box>
-                        );
-                      })}
-                    </Stack>
-                  ) : (
-                    <Typography variant="caption" color="text.secondary">
-                      Start reading to build your interest profile.
-                    </Typography>
-                  )}
-
-                  {analytics.favorite_category && (
-                    <>
-                      <Divider sx={{ my: 2 }} />
-                      <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.25 }}>
-                        Favourite category
-                      </Typography>
-                      <Typography sx={{ fontFamily: '"Playfair Display", serif', fontWeight: 700, color: theme.palette.text.primary }}>
-                        {analytics.favorite_category}
-                      </Typography>
-                    </>
-                  )}
-                </Box>
-              ) : (
-                <Box
-                  sx={{
-                    border: `1px solid ${theme.palette.divider}`,
-                    borderRadius: 1,
-                    p: 2.5,
-                  }}
-                >
-                  <Typography variant="body2" color="text.secondary">
-                    Your reading stats will appear here as you explore Nexora.
-                  </Typography>
-                </Box>
-              )}
+        {loading ? (
+          <Box
+            sx={{
+              display: 'grid',
+              gridTemplateColumns: {
+                xs: '1fr',
+                sm: 'repeat(2, 1fr)',
+                md: 'repeat(3, 1fr)',
+              },
+              gap: 3,
+            }}
+          >
+            {Array.from({ length: 6 }).map((_, i) => (
+              <NewsCardSkeleton key={i} variant="standard" />
+            ))}
+          </Box>
+        ) : recommendations.length > 0 ? (
+          <Box
+            sx={{
+              display: 'grid',
+              gridTemplateColumns: {
+                xs: '1fr',
+                sm: 'repeat(2, 1fr)',
+                md: 'repeat(3, 1fr)',
+              },
+              gap: 3,
+            }}
+          >
+            {recommendations.map((item) => (
+              <NewsCard
+                key={item._id}
+                news={item}
+                variant="standard"
+                showReason={true}
+                onBookmark={handleBookmark}
+                onLike={handleLike}
+                onClick={() => navigate(`/news/${item._id}`)}
+              />
+            ))}
+          </Box>
+        ) : (
+          <Box sx={{ py: 6, textAlign: 'center' }}>
+            <Typography variant="h5" sx={{ fontFamily: '"Playfair Display", Georgia, serif', fontWeight: 700, mb: 1 }}>
+              No recommendations yet
+            </Typography>
+            <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+              Read a few articles on the home feed and Nexora will learn your interests.
+            </Typography>
+            <Box
+              onClick={() => navigate('/')}
+              sx={{
+                display: 'inline-block',
+                px: 3,
+                py: 1.25,
+                border: `1px solid ${theme.palette.text.primary}`,
+                borderRadius: 1,
+                cursor: 'pointer',
+                fontFamily: '"Inter", sans-serif',
+                fontWeight: 500,
+                fontSize: '0.875rem',
+                color: theme.palette.text.primary,
+                '&:hover': { backgroundColor: theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.04)' },
+              }}
+            >
+              Browse news
             </Box>
-          </Grid>
-        </Grid>
-      </Container>
+          </Box>
+        )}
+      </Box>
     </Box>
   );
 }

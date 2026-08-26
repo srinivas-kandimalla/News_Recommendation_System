@@ -66,16 +66,25 @@ const ProfileMenu = () => {
         <IconButton onClick={handleOpen} sx={{ p: 0.5 }}>
           <Avatar
             sx={{
-              width: 32,
-              height: 32,
-              bgcolor: isAuthenticated
-                ? (theme.palette.mode === 'dark' ? '#3B82F6' : '#2563EB')
-                : theme.palette.divider,
+              width: 34,
+              height: 34,
+              background: theme.palette.mode === 'dark'
+                ? 'linear-gradient(135deg, #0284C7 0%, #38BDF8 100%)'
+                : 'linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%)',
               color: '#FFFFFF',
               fontSize: '0.875rem',
-              fontFamily: '"Inter", sans-serif',
-              fontWeight: 700,
-              boxShadow: isAuthenticated ? '0 2px 8px rgba(37,99,235,0.3)' : 'none',
+              fontFamily: '"Plus Jakarta Sans", "Inter", sans-serif',
+              fontWeight: 800,
+              boxShadow: theme.palette.mode === 'dark'
+                ? '0 2px 10px rgba(56, 189, 248, 0.35)'
+                : '0 2px 10px rgba(37, 99, 235, 0.35)',
+              transition: 'transform 0.2s ease, box-shadow 0.2s ease',
+              '&:hover': {
+                transform: 'scale(1.05)',
+                boxShadow: theme.palette.mode === 'dark'
+                  ? '0 4px 14px rgba(56, 189, 248, 0.5)'
+                  : '0 4px 14px rgba(37, 99, 235, 0.5)',
+              },
             }}
           >
             {isAuthenticated ? initial : 'N'}
@@ -128,26 +137,14 @@ const ProfileMenu = () => {
             )}
           </Box>,
           <Divider key="d1" sx={{ my: 0.5 }} />,
-          <MenuItem key="feed" onClick={() => go('/recommendations')} sx={menuItemSx}>
-            <ListItemIcon><AutoAwesomeIcon fontSize="small" color="primary" /></ListItemIcon>
-            Personalized Feed
-          </MenuItem>,
-          <MenuItem key="bookmarks" onClick={() => go('/bookmarks')} sx={menuItemSx}>
-            <ListItemIcon><BookmarkBorderIcon fontSize="small" /></ListItemIcon>
-            Saved Bookmarks
-          </MenuItem>,
           <MenuItem key="analytics" onClick={() => go('/analytics')} sx={menuItemSx}>
-            <ListItemIcon><BarChartIcon fontSize="small" /></ListItemIcon>
-            Reading Insights
-          </MenuItem>,
-          <MenuItem key="discover" onClick={() => go('/discover')} sx={menuItemSx}>
-            <ListItemIcon><CompassIcon fontSize="small" /></ListItemIcon>
-            Discover Topics
+            <ListItemIcon><BarChartIcon fontSize="small" color="primary" /></ListItemIcon>
+            Reading Analytics & Telemetry
           </MenuItem>,
           ...(user?.role === 'admin' ? [
             <MenuItem key="admin" onClick={() => go('/admin')} sx={menuItemSx}>
               <ListItemIcon><AdminPanelSettingsIcon fontSize="small" color="secondary" /></ListItemIcon>
-              Admin Console
+              Admin Portal
             </MenuItem>
           ] : []),
           <Divider key="d2" sx={{ my: 0.5 }} />,

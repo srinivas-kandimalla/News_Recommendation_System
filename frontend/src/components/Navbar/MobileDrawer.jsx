@@ -12,6 +12,7 @@ import {
 } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import { NavLink, useNavigate } from 'react-router-dom';
+import NexoraLogo from '../common/NexoraLogo';
 import CloseIcon from '@mui/icons-material/Close';
 import LightModeIcon from '@mui/icons-material/LightMode';
 import DarkModeIcon from '@mui/icons-material/DarkMode';
@@ -79,21 +80,7 @@ const MobileDrawer = ({ open, onClose, navLinks }) => {
           flexShrink: 0,
         }}
       >
-        <Typography
-          sx={{
-            fontFamily: '"Plus Jakarta Sans", "Inter", sans-serif',
-            fontWeight: 800,
-            fontSize: '1.35rem',
-            background: isDark
-              ? 'linear-gradient(135deg, #60A5FA 0%, #C4B5FD 50%, #F472B6 100%)'
-              : 'linear-gradient(135deg, #2563EB 0%, #7C3AED 50%, #EC4899 100%)',
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent',
-            letterSpacing: '-0.02em',
-          }}
-        >
-          Nexora
-        </Typography>
+        <NexoraLogo size={28} fontSize="1.3rem" clickable={false} />
         <IconButton onClick={onClose} sx={{ color: theme.palette.text.secondary }}>
           <CloseIcon sx={{ fontSize: 20 }} />
         </IconButton>

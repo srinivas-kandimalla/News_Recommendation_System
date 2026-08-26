@@ -1,6 +1,7 @@
 import React from 'react';
-import { Box, Container, Typography, Stack, Divider } from '@mui/material';
+import { Box, Container, Typography, Stack } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
+import NexoraLogo from './common/NexoraLogo';
 
 function Footer() {
   const theme = useTheme();
@@ -20,27 +21,12 @@ function Footer() {
           direction={{ xs: 'column', sm: 'row' }}
           alignItems={{ xs: 'flex-start', sm: 'center' }}
           justifyContent="space-between"
-          spacing={1}
+          spacing={2}
         >
-          <Box>
-            <Typography
-              sx={{
-                fontFamily: '"Playfair Display", Georgia, serif',
-                fontWeight: 800,
-                fontSize: '1.1rem',
-                color: theme.palette.text.primary,
-                letterSpacing: '-0.02em',
-              }}
-            >
-              Nexora
-            </Typography>
-            <Typography variant="caption" color="text.secondary">
-              Context-aware personalized news.
-            </Typography>
-          </Box>
+          <NexoraLogo size={24} fontSize="1.15rem" />
 
-          <Typography variant="caption" color="text.secondary">
-            © {new Date().getFullYear()} Nexora · React · Flask · MongoDB · AI
+          <Typography variant="caption" color="text.secondary" fontWeight={500}>
+            © {new Date().getFullYear()} Nexora · Context-Aware AI News Engine
           </Typography>
         </Stack>
       </Container>
