@@ -133,15 +133,18 @@ npm run dev
 
 | Method | Endpoint | Description | Auth Required |
 |---|---|---|:---:|
-| `GET` | `/api/news` | Retrieve paginated news briefing feed | No |
-| `GET` | `/api/news/search?q=query` | Live full-text search query across news database | No |
-| `GET` | `/api/recommendations` | Get personalized hybrid AI recommendations for current user | Yes |
-| `POST` | `/api/news/:id/like` | Toggle positive reaction for a news story | Yes |
-| `POST` | `/api/news/:id/bookmark` | Toggle bookmark status for saved stories grid | Yes |
-| `POST` | `/api/analytics/read-log` | Log real-time reading duration and scroll depth | Yes |
-| `GET` | `/api/analytics` | Fetch telemetry KPI counters, category distribution & activity graphs | Yes |
-| `POST` | `/api/auth/login` | Authenticate user and issue cryptographic JWT Bearer token | No |
-| `POST` | `/api/auth/register` | Register new user account | No |
+| `GET` | `/news` | Retrieve paginated news briefing feed | No |
+| `GET` | `/news/search?q=query` | Live full-text search query across news database | No |
+| `GET` | `/personalized-recommendations` | Get personalized hybrid AI recommendations for current user | Yes |
+| `GET` | `/recommendations/:id` | Get content-similar recommendations for a specific news story | No |
+| `POST` | `/news/:id/like` | Toggle positive reaction for a news story | Yes |
+| `POST` | `/news/:id/dislike` | Toggle negative reaction for a news story | Yes |
+| `POST` | `/bookmark/:id` | Toggle bookmark status for saved stories grid | Yes |
+| `POST` | `/reading-history/:id` | Log real-time reading duration and telemetry | Yes |
+| `GET` | `/analytics` | Fetch telemetry KPI counters, category distribution & activity graphs | Yes |
+| `POST` | `/login` | Authenticate user and issue cryptographic JWT Bearer token | No |
+| `POST` | `/register` | Register new user account | No |
+| `GET` | `/admin/dashboard` | Retrieve platform statistics (Admin only) | Yes (Admin) |
 
 ---
 

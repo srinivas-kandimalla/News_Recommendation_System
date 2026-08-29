@@ -1,0 +1,50 @@
+{
+  "timestamp": "2026-08-29T13:19:39.766069",
+  "endpoint": "GET /personalized-recommendations",
+  "environment": "Flask WSGI Test Client / Local MongoDB Instance",
+  "candidate_metrics": {
+    "mean_candidate_count": 5.0,
+    "min_candidate_count": 5,
+    "max_candidate_count": 5
+  },
+  "cold_start_latency_ms": 203.42,
+  "warm_latency_metrics": {
+    "model_e_heuristic": {
+      "mean_ms": 139.22,
+      "p50_ms": 135.74,
+      "p90_ms": 147.97,
+      "p95_ms": 162.52,
+      "p99_ms": 173.71,
+      "min_ms": 128.93,
+      "max_ms": 201.66
+    },
+    "model_f_neural": {
+      "mean_ms": 221.28,
+      "p50_ms": 217.02,
+      "p90_ms": 248.43,
+      "p95_ms": 268.08,
+      "p99_ms": 281.79,
+      "min_ms": 182.54,
+      "max_ms": 400.17
+    }
+  },
+  "throughput_requests_per_sec": {
+    "model_e": 7.17,
+    "model_f": 4.51
+  },
+  "latency_budget_breakdown": {
+    "authentication_jwt_db_ms": 1.174,
+    "db_user_history_ms": 1.047,
+    "candidate_retrieval_db_ms": 26.6,
+    "embedding_lookup_ms": "INCLUDED_IN_CANDIDATE_RETRIEVAL",
+    "attention_profile_ms": 2.009,
+    "context_relevance_ms": 0.0,
+    "neural_ranker_scoring_ms": 106.292,
+    "diversity_filtering_ms": 0.15,
+    "json_response_serialization_ms": 0.0
+  },
+  "p99_realtime_threshold_check": {
+    "p99_latency_ms": 281.79,
+    "sub_100ms_sla_met": false
+  }
+}

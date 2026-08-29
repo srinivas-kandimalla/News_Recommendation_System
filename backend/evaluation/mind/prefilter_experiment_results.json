@@ -1,0 +1,38 @@
+{
+  "prefilter_N_0": {
+    "top_n": 0,
+    "evaluated_impressions": 557,
+    "offline_evaluation_time_sec": 15.34,
+    "auc": 0.7086,
+    "mrr10": 0.3868,
+    "ndcg10": 0.4356,
+    "ild10": 0.9286
+  },
+  "prefilter_N_50": {
+    "top_n": 50,
+    "evaluated_impressions": 557,
+    "offline_evaluation_time_sec": 17.31,
+    "auc": 0.7086,
+    "mrr10": 0.3868,
+    "ndcg10": 0.4356,
+    "ild10": 0.9286
+  },
+  "prefilter_N_100": {
+    "top_n": 100,
+    "evaluated_impressions": 557,
+    "offline_evaluation_time_sec": 19.14,
+    "auc": 0.7086,
+    "mrr10": 0.3868,
+    "ndcg10": 0.4356,
+    "ild10": 0.9286
+  },
+  "prefilter_N_200": {
+    "top_n": 200,
+    "evaluated_impressions": 557,
+    "offline_evaluation_time_sec": 19.1,
+    "auc": 0.7086,
+    "mrr10": 0.3868,
+    "ndcg10": 0.4356,
+    "ild10": 0.9286
+  }
+}

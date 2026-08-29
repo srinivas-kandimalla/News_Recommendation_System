@@ -74,7 +74,9 @@ export const StyledInputBase = styled(InputBase)(({ theme }) => ({
   },
 }));
 
-export const NavItemButton = styled(Button)(({ theme, active }) => ({
+export const NavItemButton = styled(Button, {
+  shouldForwardProp: (prop) => prop !== 'active',
+})(({ theme, active }) => ({
   fontFamily: theme.typography.button.fontFamily,
   fontWeight: active ? 600 : 500,
   fontSize: theme.typography.button.fontSize,

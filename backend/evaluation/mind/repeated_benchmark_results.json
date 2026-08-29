@@ -1,0 +1,38 @@
+{
+  "runs": [
+    {
+      "run_index": 1,
+      "requests": 100,
+      "mean_ms": 218.97,
+      "p50_ms": 217.43,
+      "p90_ms": 233.44,
+      "p95_ms": 239.76,
+      "p99_ms": 260.52,
+      "throughput": 4.57
+    },
+    {
+      "run_index": 2,
+      "requests": 100,
+      "mean_ms": 238.76,
+      "p50_ms": 240.01,
+      "p90_ms": 271.32,
+      "p95_ms": 289.11,
+      "p99_ms": 339.61,
+      "throughput": 4.19
+    },
+    {
+      "run_index": 3,
+      "requests": 100,
+      "mean_ms": 249.15,
+      "p50_ms": 243.15,
+      "p90_ms": 278.44,
+      "p95_ms": 306.39,
+      "p99_ms": 364.5,
+      "throughput": 4.01
+    }
+  ],
+  "overall_mean_across_runs_ms": 235.63,
+  "overall_p50_across_runs_ms": 233.53,
+  "overall_p99_across_runs_ms": 321.54,
+  "run_to_run_variance_std_ms": 12.52
+}

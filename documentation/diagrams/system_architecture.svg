@@ -1,0 +1,102 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 650" width="100%" height="100%" style="background-color: #0F172A; font-family: 'Inter', system-ui, -apple-system, sans-serif;">
+  <defs>
+    <linearGradient id="blueGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1E40AF" />
+      <stop offset="100%" stop-color="#3B82F6" />
+    </linearGradient>
+    <linearGradient id="darkGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1E293B" />
+      <stop offset="100%" stop-color="#334155" />
+    </linearGradient>
+    <linearGradient id="accentGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0284C7" />
+      <stop offset="100%" stop-color="#38BDF8" />
+    </linearGradient>
+    <filter id="shadow" x="-5%" y="-5%" width="110%" height="110%">
+      <feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#000" flood-opacity="0.4"/>
+    </filter>
+    <marker id="arrow" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#38BDF8"/>
+    </marker>
+  </defs>
+
+  <text x="500" y="45" text-anchor="middle" fill="#F8FAFC" font-size="22" font-weight="700" letter-spacing="0.5">NEXORA — END-TO-END SYSTEM ARCHITECTURE</text>
+  <text x="500" y="70" text-anchor="middle" fill="#94A3B8" font-size="13">Decoupled Client-Server Microservices &amp; Hybrid PyTorch Neural Ranking Engine</text>
+
+  <!-- Frontend Container -->
+  <rect x="50" y="110" width="260" height="480" rx="12" fill="url(#darkGrad)" stroke="#334155" stroke-width="2" filter="url(#shadow)"/>
+  <rect x="50" y="110" width="260" height="40" rx="12" fill="#1E293B" stroke="#334155" stroke-width="1"/>
+  <text x="180" y="136" text-anchor="middle" fill="#38BDF8" font-size="15" font-weight="700">REACT SPA CLIENT</text>
+
+  <rect x="70" y="170" width="220" height="50" rx="8" fill="#0F172A" stroke="#2563EB" stroke-width="1.5"/>
+  <text x="180" y="192" text-anchor="middle" fill="#F8FAFC" font-size="13" font-weight="600">AuthContext &amp; ThemeContext</text>
+  <text x="180" y="208" text-anchor="middle" fill="#94A3B8" font-size="11">JWT Token &amp; HSL State</text>
+
+  <rect x="70" y="240" width="220" height="110" rx="8" fill="#0F172A" stroke="#334155" stroke-width="1.5"/>
+  <text x="180" y="262" text-anchor="middle" fill="#F8FAFC" font-size="13" font-weight="600">Core UI Pages</text>
+  <text x="180" y="282" text-anchor="middle" fill="#94A3B8" font-size="11">• Home / Feed • Discover</text>
+  <text x="180" y="300" text-anchor="middle" fill="#94A3B8" font-size="11">• Trending • Details Modal</text>
+  <text x="180" y="318" text-anchor="middle" fill="#94A3B8" font-size="11">• Recommendations • Bookmarks</text>
+  <text x="180" y="336" text-anchor="middle" fill="#94A3B8" font-size="11">• Analytics • Admin Dashboard</text>
+
+  <rect x="70" y="370" width="220" height="60" rx="8" fill="#0F172A" stroke="#334155" stroke-width="1.5"/>
+  <text x="180" y="393" text-anchor="middle" fill="#F8FAFC" font-size="13" font-weight="600">Chart.js Telemetry Suite</text>
+  <text x="180" y="412" text-anchor="middle" fill="#94A3B8" font-size="11">Category Donut &amp; Velocity Graphs</text>
+
+  <rect x="70" y="450" width="220" height="50" rx="8" fill="#0F172A" stroke="#0284C7" stroke-width="1.5"/>
+  <text x="180" y="472" text-anchor="middle" fill="#38BDF8" font-size="13" font-weight="600">Axios HTTP API Client</text>
+  <text x="180" y="488" text-anchor="middle" fill="#94A3B8" font-size="11">Bearer Authorization Headers</text>
+
+  <!-- Backend Container -->
+  <rect x="370" y="110" width="260" height="480" rx="12" fill="url(#darkGrad)" stroke="#334155" stroke-width="2" filter="url(#shadow)"/>
+  <rect x="370" y="110" width="260" height="40" rx="12" fill="#1E293B" stroke="#334155" stroke-width="1"/>
+  <text x="500" y="136" text-anchor="middle" fill="#38BDF8" font-size="15" font-weight="700">FLASK REST API SERVICE</text>
+
+  <rect x="390" y="170" width="220" height="50" rx="8" fill="#0F172A" stroke="#2563EB" stroke-width="1.5"/>
+  <text x="500" y="192" text-anchor="middle" fill="#F8FAFC" font-size="13" font-weight="600">JWT Middleware &amp; Guard</text>
+  <text x="500" y="208" text-anchor="middle" fill="#94A3B8" font-size="11">@token_required &amp; @admin_required</text>
+
+  <rect x="390" y="240" width="220" height="90" rx="8" fill="#0F172A" stroke="#334155" stroke-width="1.5"/>
+  <text x="500" y="262" text-anchor="middle" fill="#F8FAFC" font-size="13" font-weight="600">11 Modular Blueprints</text>
+  <text x="500" y="280" text-anchor="middle" fill="#94A3B8" font-size="11">user, news, recommendation,</text>
+  <text x="500" y="296" text-anchor="middle" fill="#94A3B8" font-size="11">reaction, bookmark, history,</text>
+  <text x="500" y="312" text-anchor="middle" fill="#94A3B8" font-size="11">analytics, trending, admin</text>
+
+  <rect x="390" y="350" width="220" height="110" rx="8" fill="url(#blueGrad)" stroke="#0284C7" stroke-width="1.5"/>
+  <text x="500" y="372" text-anchor="middle" fill="#FFFFFF" font-size="13" font-weight="700">PyTorch Neural Ranker</text>
+  <text x="500" y="390" text-anchor="middle" fill="#E2E8F0" font-size="11">3-Layer MLP Architecture</text>
+  <text x="500" y="408" text-anchor="middle" fill="#E2E8F0" font-size="11">1159-d Dense Feature Extractor</text>
+  <text x="500" y="426" text-anchor="middle" fill="#E2E8F0" font-size="11">Candidate-Aware Softmax Attention</text>
+  <text x="500" y="444" text-anchor="middle" fill="#E2E8F0" font-size="11">ILD Diversity Penalty Reranker</text>
+
+  <rect x="390" y="480" width="220" height="50" rx="8" fill="#0F172A" stroke="#334155" stroke-width="1.5"/>
+  <text x="500" y="502" text-anchor="middle" fill="#F8FAFC" font-size="13" font-weight="600">APScheduler Pipeline</text>
+  <text x="500" y="518" text-anchor="middle" fill="#94A3B8" font-size="11">30-Min GNews Ingestion</text>
+
+  <!-- Database & Storage Container -->
+  <rect x="690" y="110" width="260" height="480" rx="12" fill="url(#darkGrad)" stroke="#334155" stroke-width="2" filter="url(#shadow)"/>
+  <rect x="690" y="110" width="260" height="40" rx="12" fill="#1E293B" stroke="#334155" stroke-width="1"/>
+  <text x="820" y="136" text-anchor="middle" fill="#38BDF8" font-size="15" font-weight="700">DATABASE &amp; MODEL STORAGE</text>
+
+  <rect x="710" y="170" width="220" height="260" rx="8" fill="#0F172A" stroke="#0284C7" stroke-width="1.5"/>
+  <text x="820" y="195" text-anchor="middle" fill="#F8FAFC" font-size="14" font-weight="700">MongoDB 7.0 Document Store</text>
+  <text x="820" y="215" text-anchor="middle" fill="#38BDF8" font-size="12">news_recommendation_db</text>
+  <line x1="730" y1="225" x2="910" y2="225" stroke="#334155" stroke-width="1"/>
+  <text x="820" y="245" text-anchor="middle" fill="#E2E8F0" font-size="11">• users (Bcrypt Hashes, Roles)</text>
+  <text x="820" y="270" text-anchor="middle" fill="#E2E8F0" font-size="11">• news (384-d MiniLM Vectors)</text>
+  <text x="820" y="295" text-anchor="middle" fill="#E2E8F0" font-size="11">• reactions (Like / Dislike Signals)</text>
+  <text x="820" y="320" text-anchor="middle" fill="#E2E8F0" font-size="11">• bookmarks (Saved Grid)</text>
+  <text x="820" y="345" text-anchor="middle" fill="#E2E8F0" font-size="11">• reading_history (Duration Logs)</text>
+  <text x="820" y="370" text-anchor="middle" fill="#94A3B8" font-size="10">Compound Compound Indexes</text>
+  <text x="820" y="390" text-anchor="middle" fill="#94A3B8" font-size="10">candidate_id &amp; timestamp</text>
+
+  <rect x="710" y="450" width="220" height="90" rx="8" fill="#0F172A" stroke="#334155" stroke-width="1.5"/>
+  <text x="820" y="475" text-anchor="middle" fill="#F8FAFC" font-size="13" font-weight="600">Model Weights &amp; Transformers</text>
+  <text x="820" y="495" text-anchor="middle" fill="#94A3B8" font-size="11">neural_ranker.pt (MLP Weights)</text>
+  <text x="820" y="515" text-anchor="middle" fill="#94A3B8" font-size="11">all-MiniLM-L6-v2 (384-d Embedding)</text>
+
+  <!-- Connectors -->
+  <path d="M 290 475 L 390 475" stroke="#38BDF8" stroke-width="2" marker-end="url(#arrow)"/>
+  <path d="M 610 280 L 710 280" stroke="#38BDF8" stroke-width="2" marker-end="url(#arrow)"/>
+  <path d="M 610 405 L 710 405" stroke="#38BDF8" stroke-width="2" marker-end="url(#arrow)"/>
+</svg>

@@ -1,0 +1,11 @@
+graph TD
+    Start(["Start: Visit App"]) --> AuthCheck{"Authenticated?"}
+    AuthCheck -- No --> Login["Login / Register"]
+    Login --> JWT["JWT Token Saved"]
+    JWT --> Home["Home News Feed"]
+    AuthCheck -- Yes --> Home
+    Home --> ReadModal["Open News Story Modal"]
+    ReadModal --> Signals["Like / Dislike / Bookmark"]
+    Signals --> Recs["View 'For You' Recommendations"]
+    Recs --> Analytics["View Analytics / Telemetry"]
+    Analytics --> Logout(["Logout"])

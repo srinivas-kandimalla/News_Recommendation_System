@@ -71,18 +71,21 @@ def calculate_temporal_category_affinity(category, hour_of_day):
     return 1.0
 
 
-def calculate_context_relevance(candidate_news, short_term_categories, server_time=None):
+def calculate_context_relevance(candidate_news, short_term_categories, server_time=None, temporal_ctx=None, category_dist=None):
     """
     Fuse temporal context + recent category distribution + candidate metadata into
     a deterministic Context Relevance Multiplier: C_relevance in [0.80, 1.25].
+    Supports pre-computed temporal_ctx and category_dist to avoid loop recomputations.
     """
-    temporal_ctx = build_temporal_context(server_time)
-    hour = temporal_ctx["hour_of_day"]
+    if temporal_ctx is None:
+        temporal_ctx = build_temporal_context(server_time)
+    hour = temporal_ctx["hour_of_day"] if isinstance(temporal_ctx, dict) else int(temporal_ctx)
     cand_category = candidate_news.get("category", "") if isinstance(candidate_news, dict) else getattr(candidate_news, "category", "")
 
     # 1. Recent Interest Density Multiplier (up to +0.20)
-    category_dist = build_recent_interest_context(short_term_categories)
-    recent_cat_ratio = category_dist.get(cand_category, 0.0)
+    if category_dist is None:
+        category_dist = build_recent_interest_context(short_term_categories)
+    recent_cat_ratio = category_dist.get(cand_category, 0.0) if isinstance(category_dist, dict) else 0.0
     m_category = 1.0 + (0.20 * recent_cat_ratio)
 
     # 2. Temporal Affinity Multiplier

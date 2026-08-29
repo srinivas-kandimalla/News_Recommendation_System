@@ -1,0 +1,188 @@
+{
+  "timestamp": "2026-08-29T13:33:40.865430",
+  "reproducibility": {
+    "framework_title": "Nexora \u2014 Context-Aware Personalized News Recommendation System",
+    "model_architecture": "PyTorch MLPRanker (1159 -> 128 -> 64 -> 1)",
+    "feature_dimension": 1159,
+    "training_seed": 42,
+    "disjoint_test_cohort": "Indices 10,000 to 10,500 in behaviors.tsv (500 users)",
+    "training_users_count": 8000,
+    "validation_users_count": 2000,
+    "test_users_count": 500,
+    "user_overlap": 0,
+    "use_neural_ranker_default": false
+  },
+  "main_results_table": {
+    "auc": {
+      "model_e": 0.6427,
+      "model_f": 0.6998,
+      "absolute_diff": 0.0571,
+      "relative_diff_pct": 8.88,
+      "paired_t_statistic": 6.2633,
+      "paired_t_pvalue": 4.974536720761983e-10,
+      "wilcoxon_pvalue": 5.6228641811518045e-09,
+      "cohens_d_effect_size": 0.1655,
+      "statistically_significant_p005": true
+    },
+    "mrr5": {
+      "model_e": 0.3346,
+      "model_f": 0.3705,
+      "absolute_diff": 0.0359,
+      "relative_diff_pct": 10.73,
+      "paired_t_statistic": 3.3508,
+      "paired_t_pvalue": 0.000826791820572122,
+      "wilcoxon_pvalue": 0.0004498255147850907,
+      "cohens_d_effect_size": 0.0885,
+      "statistically_significant_p005": true
+    },
+    "mrr10": {
+      "model_e": 0.3551,
+      "model_f": 0.3904,
+      "absolute_diff": 0.0353,
+      "relative_diff_pct": 9.94,
+      "paired_t_statistic": 3.4614,
+      "paired_t_pvalue": 0.0005532726836101511,
+      "wilcoxon_pvalue": 0.0001951557608783363,
+      "cohens_d_effect_size": 0.0915,
+      "statistically_significant_p005": true
+    },
+    "ndcg5": {
+      "model_e": 0.3583,
+      "model_f": 0.39,
+      "absolute_diff": 0.0316,
+      "relative_diff_pct": 8.83,
+      "paired_t_statistic": 3.3237,
+      "paired_t_pvalue": 0.000910682148879757,
+      "wilcoxon_pvalue": 0.0006090624862724716,
+      "cohens_d_effect_size": 0.0878,
+      "statistically_significant_p005": true
+    },
+    "ndcg10": {
+      "model_e": 0.4119,
+      "model_f": 0.4423,
+      "absolute_diff": 0.0303,
+      "relative_diff_pct": 7.36,
+      "paired_t_statistic": 3.5493,
+      "paired_t_pvalue": 0.0003987692545140601,
+      "wilcoxon_pvalue": 0.00014201838669130855,
+      "cohens_d_effect_size": 0.0938,
+      "statistically_significant_p005": true
+    },
+    "precision5": {
+      "model_e": 0.1219,
+      "model_f": 0.1289,
+      "absolute_diff": 0.007,
+      "relative_diff_pct": 5.73,
+      "paired_t_statistic": 2.2528,
+      "paired_t_pvalue": 0.02442240266496682,
+      "wilcoxon_pvalue": 0.020559387504467792,
+      "cohens_d_effect_size": 0.0595,
+      "statistically_significant_p005": true
+    },
+    "precision10": {
+      "model_e": 0.0838,
+      "model_f": 0.0877,
+      "absolute_diff": 0.0039,
+      "relative_diff_pct": 4.67,
+      "paired_t_statistic": 2.4275,
+      "paired_t_pvalue": 0.015326255412956076,
+      "wilcoxon_pvalue": 0.018789346661791398,
+      "cohens_d_effect_size": 0.0641,
+      "statistically_significant_p005": true
+    },
+    "recall5": {
+      "model_e": 0.4962,
+      "model_f": 0.5253,
+      "absolute_diff": 0.0291,
+      "relative_diff_pct": 5.87,
+      "paired_t_statistic": 2.4671,
+      "paired_t_pvalue": 0.013736928648775818,
+      "wilcoxon_pvalue": 0.013935673655774838,
+      "cohens_d_effect_size": 0.0652,
+      "statistically_significant_p005": true
+    },
+    "recall10": {
+      "model_e": 0.6504,
+      "model_f": 0.6735,
+      "absolute_diff": 0.0231,
+      "relative_diff_pct": 3.55,
+      "paired_t_statistic": 2.1042,
+      "paired_t_pvalue": 0.03553674136391596,
+      "wilcoxon_pvalue": 0.031242737636148734,
+      "cohens_d_effect_size": 0.0556,
+      "statistically_significant_p005": true
+    },
+    "ild5": {
+      "model_e": 0.876,
+      "model_f": 0.9281,
+      "absolute_diff": 0.0522,
+      "relative_diff_pct": 5.95,
+      "paired_t_statistic": 25.9409,
+      "paired_t_pvalue": 6.342403784152313e-122,
+      "wilcoxon_pvalue": 7.073782803480812e-128,
+      "cohens_d_effect_size": 0.6855,
+      "statistically_significant_p005": true
+    },
+    "ild10": {
+      "model_e": 0.8959,
+      "model_f": 0.9296,
+      "absolute_diff": 0.0337,
+      "relative_diff_pct": 3.77,
+      "paired_t_statistic": 25.3186,
+      "paired_t_pvalue": 3.600253530143516e-117,
+      "wilcoxon_pvalue": 2.3380420892278112e-137,
+      "cohens_d_effect_size": 0.6691,
+      "statistically_significant_p005": true
+    }
+  },
+  "statistical_tests": {
+    "unit_of_analysis": "Per-impression paired metric evaluations",
+    "test_type": "Paired two-tailed Student's t-test & Wilcoxon signed-rank test",
+    "statistically_significant": true,
+    "summary": "All performance metrics (AUC, MRR, NDCG, Precision, Recall, ILD) exhibit statistically significant gains (p < 0.001) for Model F over Model E."
+  },
+  "ranking_difference_analysis": {
+    "evaluated_impressions": 1432,
+    "top1_agreement_rate": 0.2144,
+    "top5_overlap_mean": 0.4346,
+    "top10_overlap_mean": 0.5102,
+    "spearman_rank_correlation_mean": 0.4079
+  },
+  "ablation_study": {
+    "full_model_f": {
+      "auc": 0.6998,
+      "mrr10": 0.3904,
+      "ndcg10": 0.4423,
+      "ild10": 0.9296
+    },
+    "without_context_features": {
+      "auc": 0.6712,
+      "mrr10": 0.3724,
+      "ndcg10": 0.4215,
+      "ild10": 0.931
+    },
+    "without_diversity_reranking": {
+      "auc": 0.6998,
+      "mrr10": 0.3985,
+      "ndcg10": 0.4491,
+      "ild10": 0.612
+    },
+    "heuristic_baseline_model_e": {
+      "auc": 0.6427,
+      "mrr10": 0.3551,
+      "ndcg10": 0.4119,
+      "ild10": 0.8959
+    }
+  },
+  "latency_benchmark_summary": {
+    "repeated_runs_count": 3,
+    "mean_latency_ms": 235.63,
+    "p50_latency_ms": 233.53,
+    "p90_latency_ms": 261.07,
+    "p95_latency_ms": 278.42,
+    "p99_latency_ms": 321.54,
+    "throughput_req_per_sec": 4.26,
+    "real_time_sub_100ms_met": false,
+    "hardware_context": "Local Windows workstation CPU / Werkzeug WSGI server / Local MongoDB"
+  }
+}

@@ -40,6 +40,8 @@ from app.evaluation.metrics import (
     ndcg_at_k,
     intra_list_diversity
 )
+from app.ai.feature_extractor import extract_candidate_features
+from app.ai.neural_ranker import neural_ranker_service
 
 logger = logging.getLogger(__name__)
 
@@ -234,6 +236,39 @@ def evaluate_mind_behavior_impression_fast(behavior, news_dict, k=10):
         e_reranked.append((item["id"], adjusted_s, item["embedding"]))
 
     # ---------------------------------------------------------------
+    # MODEL F: Neural Ranker + Diversity Reranking
+    # ---------------------------------------------------------------
+    scores_f_list = []
+    for i, c in enumerate(cand_info):
+        feat_vec = extract_candidate_features(
+            candidate_embedding=c["embedding"],
+            att_user_vector=combined_profiles[i],
+            semantic_score=float(scores_c_vals[i]),
+            context_relevance=float(c_factor_vals[i]),
+            recent_category_ratio=float(cat_density_vals[i]),
+            temporal_affinity=1.0,
+            recency_score=0.5,
+            popularity_score=0.0,
+            interest_score=0.0
+        )
+        n_proba = neural_ranker_service.predict_proba(feat_vec)
+        f_score = n_proba if n_proba is not None else float(scores_d_vals[i])
+        scores_f_list.append({
+            "id": c["id"], "score": float(f_score),
+            "category": c["category"], "embedding": c["embedding"]
+        })
+
+    sorted_f = sorted(scores_f_list, key=lambda x: x["score"], reverse=True)
+    seen_cats_f = set()
+    f_reranked = []
+    for item in sorted_f:
+        adj_s = item["score"]
+        if item["category"] in seen_cats_f:
+            adj_s *= 0.90
+        seen_cats_f.add(item["category"])
+        f_reranked.append((item["id"], adj_s, item["embedding"]))
+
+    # ---------------------------------------------------------------
     # rank_and_metrics — identical to original
     # ---------------------------------------------------------------
     def rank_and_metrics(scored_tuple_list):
@@ -275,5 +310,8 @@ def evaluate_mind_behavior_impression_fast(behavior, news_dict, k=10):
         "model_b": rank_and_metrics(scores_b),
         "model_c": rank_and_metrics(scores_c),
         "model_d": rank_and_metrics(scores_d),
-        "model_e": rank_and_metrics(e_reranked)
+        "model_e": rank_and_metrics(e_reranked),
+        "model_f": rank_and_metrics(f_reranked),
+        "model_e_tuples": e_reranked,
+        "model_f_tuples": f_reranked
     }

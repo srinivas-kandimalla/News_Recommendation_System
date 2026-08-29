@@ -59,6 +59,14 @@ class Config:
     except (ValueError, TypeError):
         ATTENTION_TEMPERATURE = 0.1
 
+    USE_NEURAL_RANKER = os.getenv("USE_NEURAL_RANKER", "False").lower() == "true"
+    try:
+        CANDIDATE_PREFILTER_TOP_N = int(os.getenv("CANDIDATE_PREFILTER_TOP_N", "0"))
+        if CANDIDATE_PREFILTER_TOP_N < 0:
+            CANDIDATE_PREFILTER_TOP_N = 0
+    except (ValueError, TypeError):
+        CANDIDATE_PREFILTER_TOP_N = 0
+
     allowed_origins_env = os.getenv("ALLOWED_ORIGINS", "")
     if allowed_origins_env:
         ALLOWED_ORIGINS = [o.strip() for o in allowed_origins_env.split(",") if o.strip()]

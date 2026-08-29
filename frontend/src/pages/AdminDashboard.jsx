@@ -13,25 +13,30 @@ import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
 import { Pie } from 'react-chartjs-2';
 
 import { getAdminDashboard } from '../services/newsService';
+import { useAuth } from '../context/AuthContext';
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
 function AdminDashboard() {
   const theme = useTheme();
+  const { token } = useAuth();
 
   const [dashboard, setDashboard] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  useEffect(() => { loadDashboard(); }, []);
+  useEffect(() => {
+    loadDashboard();
+  }, [token]);
 
   const loadDashboard = async () => {
     try {
-      const res = await getAdminDashboard();
-      if (res.success) setDashboard(res.dashboard);
+      const res = await getAdminDashboard(token);
+      if (res.success) setDashboard(res.dashboard || res.stats || res);
       else setError(res.message || 'Failed to load dashboard.');
-    } catch {
-      setError('Unable to load admin dashboard.');
+    } catch (err) {
+      const errMsg = err.response?.data?.message || 'Unable to load admin dashboard.';
+      setError(errMsg);
     } finally {
       setLoading(false);
     }
@@ -55,11 +60,12 @@ function AdminDashboard() {
   }
 
   const isDark = theme.palette.mode === 'dark';
+  const stats = dashboard?.stats || dashboard;
 
-  const reactionData = dashboard ? {
+  const reactionData = stats ? {
     labels: ['Likes', 'Dislikes'],
     datasets: [{
-      data: [dashboard.total_likes || 0, dashboard.total_dislikes || 0],
+      data: [stats.total_likes || 0, stats.total_dislikes || 0],
       backgroundColor: isDark ? ['#F0F0F0', '#2A2A2A'] : ['#1A1A1A', '#E5E5E5'],
       borderWidth: 0,
     }],
@@ -80,11 +86,11 @@ function AdminDashboard() {
     },
   };
 
-  const kpis = dashboard ? [
-    { label: 'Total users', value: dashboard.total_users ?? 0 },
-    { label: 'Total articles', value: dashboard.total_news ?? 0 },
-    { label: 'Total reads', value: dashboard.total_reads ?? 0 },
-    { label: 'Total bookmarks', value: dashboard.total_bookmarks ?? 0 },
+  const kpis = stats ? [
+    { label: 'Total users', value: stats.total_users ?? stats.users_count ?? 0 },
+    { label: 'Total articles', value: stats.total_news ?? stats.news_count ?? 0 },
+    { label: 'Total reads', value: stats.total_reads ?? stats.reads_count ?? 0 },
+    { label: 'Total bookmarks', value: stats.total_bookmarks ?? stats.bookmarks_count ?? 0 },
   ] : [];
 
   return (
@@ -164,7 +170,7 @@ function AdminDashboard() {
             )}
 
             {/* Most popular category */}
-            {dashboard.most_popular_category && (
+            {stats?.most_popular_category && (
               <Grid item xs={12} sm={6} md={4}>
                 <Typography sx={{ ...sectionLabel, mb: 2 }}>Top Category</Typography>
                 <Box
@@ -183,7 +189,7 @@ function AdminDashboard() {
                       color: theme.palette.text.primary,
                     }}
                   >
-                    {dashboard.most_popular_category}
+                    {stats.most_popular_category}
                   </Typography>
                 </Box>
               </Grid>

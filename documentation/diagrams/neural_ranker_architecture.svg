@@ -1,0 +1,66 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 680" width="100%" height="100%" style="background-color: #0F172A; font-family: 'Inter', system-ui, -apple-system, sans-serif;">
+  <defs>
+    <linearGradient id="layerGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1E293B" />
+      <stop offset="100%" stop-color="#334155" />
+    </linearGradient>
+    <linearGradient id="highlight" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0284C7" />
+      <stop offset="100%" stop-color="#2563EB" />
+    </linearGradient>
+    <marker id="arr2" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#38BDF8"/>
+    </marker>
+  </defs>
+
+  <text x="450" y="40" text-anchor="middle" fill="#F8FAFC" font-size="22" font-weight="700">PYTORCH NEURAL RANKER (MLP) ARCHITECTURE</text>
+  <text x="450" y="65" text-anchor="middle" fill="#94A3B8" font-size="13">Layer-by-Layer Dimensionality Transformation &amp; Activation Pipeline</text>
+
+  <!-- Input Layer -->
+  <rect x="200" y="95" width="500" height="60" rx="8" fill="url(#layerGrad)" stroke="#38BDF8" stroke-width="2"/>
+  <text x="450" y="120" text-anchor="middle" fill="#38BDF8" font-size="15" font-weight="700">INPUT FEATURE VECTOR (1159-D)</text>
+  <text x="450" y="140" text-anchor="middle" fill="#94A3B8" font-size="11">384-d Candidate + 384-d Attention + 384-d Hadamard Interaction + 7 Scalars</text>
+
+  <path d="M 450 155 L 450 180" stroke="#38BDF8" stroke-width="2" marker-end="url(#arr2)"/>
+
+  <!-- Linear 1159 -> 128 -->
+  <rect x="250" y="180" width="400" height="45" rx="8" fill="url(#layerGrad)" stroke="#334155" stroke-width="1.5"/>
+  <text x="450" y="207" text-anchor="middle" fill="#F8FAFC" font-size="14" font-weight="600">Linear Layer (1159 $ightarrow$ 128)</text>
+
+  <path d="M 450 225 L 450 250" stroke="#38BDF8" stroke-width="2" marker-end="url(#arr2)"/>
+
+  <!-- ReLU Activation -->
+  <rect x="300" y="250" width="300" height="40" rx="8" fill="url(#highlight)" stroke="#0284C7" stroke-width="1.5"/>
+  <text x="450" y="275" text-anchor="middle" fill="#FFFFFF" font-size="14" font-weight="700">ReLU Activation</text>
+
+  <path d="M 450 290 L 450 315" stroke="#38BDF8" stroke-width="2" marker-end="url(#arr2)"/>
+
+  <!-- Dropout 0.2 -->
+  <rect x="300" y="315" width="300" height="40" rx="8" fill="url(#layerGrad)" stroke="#334155" stroke-width="1.5"/>
+  <text x="450" y="340" text-anchor="middle" fill="#F8FAFC" font-size="14" font-weight="600">Dropout (p = 0.2)</text>
+
+  <path d="M 450 355 L 450 380" stroke="#38BDF8" stroke-width="2" marker-end="url(#arr2)"/>
+
+  <!-- Linear 128 -> 64 -->
+  <rect x="250" y="380" width="400" height="45" rx="8" fill="url(#layerGrad)" stroke="#334155" stroke-width="1.5"/>
+  <text x="450" y="407" text-anchor="middle" fill="#F8FAFC" font-size="14" font-weight="600">Linear Layer (128 $ightarrow$ 64)</text>
+
+  <path d="M 450 425 L 450 450" stroke="#38BDF8" stroke-width="2" marker-end="url(#arr2)"/>
+
+  <!-- ReLU Activation -->
+  <rect x="300" y="450" width="300" height="40" rx="8" fill="url(#highlight)" stroke="#0284C7" stroke-width="1.5"/>
+  <text x="450" y="475" text-anchor="middle" fill="#FFFFFF" font-size="14" font-weight="700">ReLU Activation</text>
+
+  <path d="M 450 490 L 450 515" stroke="#38BDF8" stroke-width="2" marker-end="url(#arr2)"/>
+
+  <!-- Linear 64 -> 1 -->
+  <rect x="250" y="515" width="400" height="45" rx="8" fill="url(#layerGrad)" stroke="#334155" stroke-width="1.5"/>
+  <text x="450" y="542" text-anchor="middle" fill="#F8FAFC" font-size="14" font-weight="600">Linear Output Layer (64 $ightarrow$ 1)</text>
+
+  <path d="M 450 560 L 450 585" stroke="#38BDF8" stroke-width="2" marker-end="url(#arr2)"/>
+
+  <!-- Sigmoid Output -->
+  <rect x="250" y="585" width="400" height="50" rx="8" fill="#0284C7" stroke="#38BDF8" stroke-width="2"/>
+  <text x="450" y="608" text-anchor="middle" fill="#FFFFFF" font-size="15" font-weight="700">Sigmoid $ightarrow$ P(click) Score ∈ [0, 1]</text>
+  <text x="450" y="624" text-anchor="middle" fill="#E2E8F0" font-size="11">Predicted Click Probability for Candidate Story Ranking</text>
+</svg>

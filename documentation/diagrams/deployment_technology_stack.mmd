@@ -1,0 +1,25 @@
+graph TB
+    subgraph L1 ["Presentation Layer (Port 5173)"]
+        React["React 18 & Vite"]
+        MUI["Material-UI v6 & Chart.js"]
+        Playwright["Playwright E2E Test Suite"]
+    end
+
+    subgraph L2 ["Application API Layer (Port 5000)"]
+        Flask["Python Flask REST API"]
+        PyJWT["PyJWT Cryptographic Auth"]
+        Scheduler["APScheduler 30-Min Pipeline"]
+    end
+
+    subgraph L3 ["AI & Deep Learning Layer"]
+        PyTorch["PyTorch 2.x Neural Ranker (1159-d MLP)"]
+        SentenceTransformers["SentenceTransformers (all-MiniLM-L6-v2)"]
+    end
+
+    subgraph L4 ["Database Layer (Port 27017)"]
+        MongoDB["MongoDB 7.0 Document Database"]
+    end
+
+    L1 --> L2
+    L2 --> L3
+    L2 --> L4

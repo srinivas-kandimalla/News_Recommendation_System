@@ -137,8 +137,11 @@ export const getAnalytics = async (token) => {
 // Admin Dashboard
 // ======================================================
 
-export const getAdminDashboard = async () => {
-  const { data } = await api.get("/admin/dashboard");
+export const getAdminDashboard = async (token) => {
+  const { data } = await api.get(
+    "/admin/dashboard",
+    authHeader(token)
+  );
   return data;
 };
 
