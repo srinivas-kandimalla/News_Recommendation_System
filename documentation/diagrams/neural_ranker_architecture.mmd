@@ -1,9 +1,0 @@
-graph TD
-    In["Input Feature Vector (1159-Dimensional)"] --> L1["Linear Layer (1159 → 128)"]
-    L1 --> R1["ReLU Activation"]
-    R1 --> D1["Dropout (p = 0.2)"]
-    D1 --> L2["Linear Layer (128 → 64)"]
-    L2 --> R2["ReLU Activation"]
-    R2 --> L3["Linear Layer (64 → 1)"]
-    L3 --> Sig["Sigmoid Activation Function"]
-    Sig --> Out["Predicted P(click) Score ∈ [0, 1]"]

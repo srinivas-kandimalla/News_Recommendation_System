@@ -1,7 +1,0 @@
-graph TD
-    A["1. User Interaction History (reading_history, reactions, bookmarks)"] --> B["2. Decoupled Profiling (Short-Term M≤5, Long-Term M≤50)"]
-    B --> C["3. Candidate-Aware Softmax Attention (Temperature τ = 0.1)"]
-    C --> D["4. 1159-Dimensional Feature Vector Construction (384-d c_emb + 384-d u_att + 384-d u⊙c + 7 Scalars)"]
-    D --> E["5. PyTorch Neural Ranker MLP (Linear 1159→128 → ReLU → Dropout → Linear 128→64 → ReLU → Linear 64→1 → Sigmoid)"]
-    E --> F["6. Greedy Intra-List Diversity (ILD) Reranking"]
-    F --> G["7. Final Personalized News Briefing Feed"]

@@ -1,67 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 680" width="100%" height="100%" style="background-color: #0F172A; font-family: 'Inter', system-ui, -apple-system, sans-serif;">
-  <defs>
-    <linearGradient id="accent" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#0284C7" />
-      <stop offset="100%" stop-color="#38BDF8" />
-    </linearGradient>
-    <linearGradient id="boxBg" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#1E293B" />
-      <stop offset="100%" stop-color="#334155" />
-    </linearGradient>
-    <marker id="arr" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-      <path d="M 0 1 L 10 5 L 0 9 z" fill="#38BDF8"/>
-    </marker>
-  </defs>
-
-  <text x="500" y="45" text-anchor="middle" fill="#F8FAFC" font-size="22" font-weight="700">NEXORA — HYBRID RECOMMENDATION ARCHITECTURE</text>
-  <text x="500" y="70" text-anchor="middle" fill="#94A3B8" font-size="13">Candidate Retrieval $ightarrow$ Softmax Attention $ightarrow$ 1159-d Vector Extraction $ightarrow$ PyTorch Ranker $ightarrow$ ILD Reranking</text>
-
-  <!-- Flow Blocks -->
-  <!-- Step 1: User History -->
-  <rect x="360" y="100" width="280" height="50" rx="8" fill="url(#boxBg)" stroke="#38BDF8" stroke-width="1.5"/>
-  <text x="500" y="123" text-anchor="middle" fill="#F8FAFC" font-size="14" font-weight="700">1. User Interaction History</text>
-  <text x="500" y="139" text-anchor="middle" fill="#94A3B8" font-size="11">MongoDB reading_history, reactions &amp; bookmarks</text>
-
-  <path d="M 500 150 L 500 175" stroke="#38BDF8" stroke-width="2" marker-end="url(#arr)"/>
-
-  <!-- Step 2: Profiles -->
-  <rect x="250" y="175" width="500" height="55" rx="8" fill="url(#boxBg)" stroke="#334155" stroke-width="1.5"/>
-  <text x="500" y="198" text-anchor="middle" fill="#F8FAFC" font-size="14" font-weight="700">2. Decoupled Long-Term / Short-Term Profiles</text>
-  <text x="370" y="218" text-anchor="middle" fill="#38BDF8" font-size="11">Short-Term: M ≤ 5 recent reads</text>
-  <text x="630" y="218" text-anchor="middle" fill="#38BDF8" font-size="11">Long-Term: M ≤ 50 historical reads</text>
-
-  <path d="M 500 230 L 500 255" stroke="#38BDF8" stroke-width="2" marker-end="url(#arr)"/>
-
-  <!-- Step 3: Attention -->
-  <rect x="250" y="255" width="500" height="55" rx="8" fill="url(#boxBg)" stroke="#0284C7" stroke-width="1.5"/>
-  <text x="500" y="278" text-anchor="middle" fill="#F8FAFC" font-size="14" font-weight="700">3. Candidate-Aware Softmax Attention</text>
-  <text x="500" y="298" text-anchor="middle" fill="#94A3B8" font-size="11">α_j = exp(c · h_j / τ) / Σ exp(c · h_k / τ) (Temperature τ = 0.1)</text>
-
-  <path d="M 500 310 L 500 335" stroke="#38BDF8" stroke-width="2" marker-end="url(#arr)"/>
-
-  <!-- Step 4: Context & Feature Extractor -->
-  <rect x="180" y="335" width="640" height="70" rx="8" fill="url(#boxBg)" stroke="#334155" stroke-width="1.5"/>
-  <text x="500" y="358" text-anchor="middle" fill="#F8FAFC" font-size="14" font-weight="700">4. 1159-Dimensional Dense Feature Vector Construction</text>
-  <text x="500" y="378" text-anchor="middle" fill="#38BDF8" font-size="11">384-d Candidate Embedding + 384-d Attention Vector + 384-d Interaction (u ⊙ c) + 7 Signals</text>
-  <text x="500" y="394" text-anchor="middle" fill="#94A3B8" font-size="10">Signals: semantic_score, context_relevance, recent_category_ratio, temporal_affinity, recency_score, popularity_score, interest_score</text>
-
-  <path d="M 500 405 L 500 430" stroke="#38BDF8" stroke-width="2" marker-end="url(#arr)"/>
-
-  <!-- Step 5: Neural Ranker -->
-  <rect x="250" y="430" width="500" height="60" rx="8" fill="url(#boxBg)" stroke="#2563EB" stroke-width="2"/>
-  <text x="500" y="453" text-anchor="middle" fill="#FFFFFF" font-size="15" font-weight="700">5. PyTorch Neural Ranker (MLP)</text>
-  <text x="500" y="473" text-anchor="middle" fill="#E2E8F0" font-size="11">Input(1159) $ightarrow$ Linear(128) $ightarrow$ ReLU $ightarrow$ Dropout(0.2) $ightarrow$ Linear(64) $ightarrow$ Linear(1) $ightarrow$ P(click)</text>
-
-  <path d="M 500 490 L 500 515" stroke="#38BDF8" stroke-width="2" marker-end="url(#arr)"/>
-
-  <!-- Step 6: Diversity Reranking -->
-  <rect x="250" y="515" width="500" height="55" rx="8" fill="url(#boxBg)" stroke="#0284C7" stroke-width="1.5"/>
-  <text x="500" y="538" text-anchor="middle" fill="#F8FAFC" font-size="14" font-weight="700">6. Greedy Intra-List Diversity (ILD) Reranking</text>
-  <text x="500" y="558" text-anchor="middle" fill="#94A3B8" font-size="11">ILD Penalty: Maximize (1 - cos(c_i, c_j)) to prevent echo-chambers (ILD@10 = 0.9296)</text>
-
-  <path d="M 500 570 L 500 595" stroke="#38BDF8" stroke-width="2" marker-end="url(#arr)"/>
-
-  <!-- Step 7: Output -->
-  <rect x="300" y="595" width="400" height="45" rx="8" fill="#0284C7" stroke="#38BDF8" stroke-width="2"/>
-  <text x="500" y="623" text-anchor="middle" fill="#FFFFFF" font-size="15" font-weight="700">7. Final Personalized News Briefing Feed</text>
-</svg>
