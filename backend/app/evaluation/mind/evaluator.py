@@ -13,6 +13,7 @@ from app.evaluation.metrics import (
     ndcg_at_k,
     intra_list_diversity
 )
+from app.ai.diversity_service import apply_diversity_reranking
 
 logger = logging.getLogger(__name__)
 
@@ -126,17 +127,9 @@ def evaluate_mind_behavior_impression(behavior, news_dict, k=10):
             "ild10": intra_list_diversity(rec_embs, 10)
         }
 
-    # Model E: Diversity-aware reranking
-    sorted_e = sorted(scores_e, key=lambda x: x["score"], reverse=True)
-    # Apply category diversity penalty to redundant categories
-    seen_cats = set()
-    e_reranked = []
-    for item in sorted_e:
-        adjusted_s = item["score"]
-        if item["category"] in seen_cats:
-            adjusted_s *= 0.90
-        seen_cats.add(item["category"])
-        e_reranked.append((item["id"], adjusted_s, item["embedding"]))
+    # Model E: Research-grade Diversity-aware reranking (Eq 14)
+    reranked_e_dicts = apply_diversity_reranking(scores_e, top_k=len(scores_e), score_key="score")
+    e_reranked = [(item["id"], item.get("adjusted_score", item["score"]), item["embedding"]) for item in reranked_e_dicts]
 
     return {
         "model_a": rank_and_metrics(scores_a),

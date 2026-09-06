@@ -36,6 +36,7 @@ from app.ai.context_service import (
 )
 from app.ai.feature_extractor import extract_candidate_features, extract_candidate_features_batch
 from app.ai.neural_ranker import neural_ranker_service
+from app.ai.diversity_service import apply_diversity_reranking, apply_diversity_filter
 
 
 
@@ -139,37 +140,10 @@ def get_recommendations(news_id, top_k=5):
 
 
 def apply_diversity_filter(recommendations, top_k):
-    filtered_recommendations = []
-    category_counts = {}
-    source_counts = {}
-
-    # Pass 1: Strict diversity caps (max 2 per category, max 2 per source)
-    for item in recommendations:
-        category = item.get("category", "")
-        source = item.get("source", "")
-
-        cat_count = category_counts.get(category, 0)
-        src_count = source_counts.get(source, 0)
-
-        if cat_count < 2 and src_count < 2:
-            filtered_recommendations.append(item)
-            category_counts[category] = cat_count + 1
-            source_counts[source] = src_count + 1
-
-            if len(filtered_recommendations) == top_k:
-                break
-
-    # Pass 2: Fill top_k slots if diversity caps restricted output
-    if len(filtered_recommendations) < top_k:
-        added_ids = {r["_id"] for r in filtered_recommendations}
-        for item in recommendations:
-            if item["_id"] not in added_ids:
-                filtered_recommendations.append(item)
-                added_ids.add(item["_id"])
-                if len(filtered_recommendations) == top_k:
-                    break
-
-    return filtered_recommendations
+    """
+    Apply research-grade Diversity-Aware Reranking (Eq. 14) to candidate recommendations.
+    """
+    return apply_diversity_reranking(recommendations, top_k=top_k)
 
 
 # =====================================================

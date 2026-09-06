@@ -25,6 +25,7 @@ from app.ai.feature_extractor import extract_candidate_features, get_feature_dim
 from app.ai.neural_ranker import neural_ranker_service, PyTorchNeuralRanker, MODEL_WEIGHTS_PATH, MODEL_CONFIG_PATH
 from app.evaluation.mind.evaluator_fast import evaluate_mind_behavior_impression_fast, _vectorized_attention_profile, _l2_normalize_rows
 from app.evaluation.metrics import precision_at_k, recall_at_k, mrr_at_k, ndcg_at_k, intra_list_diversity
+from app.ai.diversity_service import apply_diversity_reranking
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 logger = logging.getLogger(__name__)
@@ -249,25 +250,15 @@ def run_effectiveness_audit(num_impressions=100):
         # ---------------------------------------------------------
         # POST-DIVERSITY RERANKING COMPARISON
         # ---------------------------------------------------------
-        # Model E Reranking
+        # Model E Reranking (Eq 14 subtractive penalty)
         e_cand_list = [{"id": c["id"], "score": float(e_raw_scores[i]), "category": c["category"]} for i, c in enumerate(cand_info)]
-        sorted_e = sorted(e_cand_list, key=lambda x: x["score"], reverse=True)
-        seen_cats_e = set()
-        e_post_tuples = []
-        for item in sorted_e:
-            adj = item["score"] * (0.90 if item["category"] in seen_cats_e else 1.0)
-            seen_cats_e.add(item["category"])
-            e_post_tuples.append((item["id"], adj))
+        e_reranked_dicts = apply_diversity_reranking(e_cand_list, top_k=len(e_cand_list), score_key="score")
+        e_post_tuples = [(item["id"], item.get("adjusted_score", item["score"])) for item in e_reranked_dicts]
 
-        # Model F Reranking
+        # Model F Reranking (Eq 14 subtractive penalty)
         f_cand_list = [{"id": c["id"], "score": float(f_raw_scores[i]), "category": c["category"]} for i, c in enumerate(cand_info)]
-        sorted_f = sorted(f_cand_list, key=lambda x: x["score"], reverse=True)
-        seen_cats_f = set()
-        f_post_tuples = []
-        for item in sorted_f:
-            adj = item["score"] * (0.90 if item["category"] in seen_cats_f else 1.0)
-            seen_cats_f.add(item["category"])
-            f_post_tuples.append((item["id"], adj))
+        f_reranked_dicts = apply_diversity_reranking(f_cand_list, top_k=len(f_cand_list), score_key="score")
+        f_post_tuples = [(item["id"], item.get("adjusted_score", item["score"])) for item in f_reranked_dicts]
 
         top1_e_post = e_post_tuples[0][0]
         top1_f_post = f_post_tuples[0][0]

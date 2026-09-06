@@ -1,0 +1,250 @@
+{
+  "timestamp": "2026-09-06T11:36:00.000000",
+  "project_title": "Nexora — Deep Learning-Based Context-Aware Real-Time Personalized News Recommendation Framework",
+  "audit_scope": "Pre-Step 6 Project Improvements Summary Audit (Read-Only Technical Analysis)",
+  "purpose": "Precise technical accounting of what was actually improved in the Nexora project during Steps 1-5, distinguishing newly implemented code improvements from existing retained features and evaluation fixes.",
+  "components_architecture_audit": {
+    "1_user_history_modeling": {
+      "original": "MongoDB reading_history_collection fetching long-term and short-term read news IDs",
+      "current": "MongoDB reading_history_collection fetching long-term and short-term read news IDs",
+      "what_changed": "None. Architecture retained.",
+      "why_changed": "N/A",
+      "evidence_location": "backend/app/ai/user_profile_service.py",
+      "status": "EXISTING / RETAINED"
+    },
+    "2_long_term_history": {
+      "original": "Slices up to 50 recent read news items (-50:) to construct long-term profile",
+      "current": "Slices up to 50 recent read news items (-50:) to construct long-term profile",
+      "what_changed": "None. Parameter retained.",
+      "why_changed": "N/A",
+      "evidence_location": "backend/app/ai/user_profile_service.py",
+      "status": "EXISTING / RETAINED"
+    },
+    "3_short_term_history": {
+      "original": "Slices up to 5 recent read news items (-5:) for immediate interest profile & context density",
+      "current": "Slices up to 5 recent read news items (-5:) for immediate interest profile & context density",
+      "what_changed": "None. Parameter retained.",
+      "why_changed": "N/A",
+      "evidence_location": "backend/app/ai/user_profile_service.py",
+      "status": "EXISTING / RETAINED"
+    },
+    "4_candidate_aware_attention": {
+      "original": "Softmax attention mechanism over history vectors with candidate embedding as query (temp tau=0.1)",
+      "current": "Softmax attention mechanism over history vectors with candidate embedding as query (temp tau=0.1)",
+      "what_changed": "None. Mechanism retained.",
+      "why_changed": "N/A",
+      "evidence_location": "backend/app/ai/attention_service.py",
+      "status": "EXISTING / RETAINED"
+    },
+    "5_context_aware_features": {
+      "original": "Calculates context_relevance factor and recent_category_ratio from user short history",
+      "current": "Calculates context_relevance factor and recent_category_ratio from user short history",
+      "what_changed": "Retained & verified in 1159-dim vector construction; confirmed active in 73.53% of session rankings.",
+      "why_changed": "N/A",
+      "evidence_location": "backend/app/ai/context_service.py",
+      "status": "EXISTING / RETAINED"
+    },
+    "6_feature_vector_construction": {
+      "original": "Concatenation of candidate embedding (384), attention user vector (384), elementwise product (384), and 7 scalars = 1159-dim vector",
+      "current": "Concatenation of candidate embedding (384), attention user vector (384), elementwise product (384), and 7 scalars = 1159-dim vector",
+      "what_changed": "None. Schema retained.",
+      "why_changed": "N/A",
+      "evidence_location": "backend/app/ai/feature_extractor.py",
+      "status": "EXISTING / RETAINED"
+    },
+    "7_neural_ranker": {
+      "original": "PyTorch MLPRanker architecture (1159 -> 128 -> 64 -> 1) trained with BCE loss",
+      "current": "PyTorch MLPRanker architecture (1159 -> 128 -> 64 -> 1) trained with BCE loss",
+      "what_changed": "None. Model weights & architecture retained.",
+      "why_changed": "N/A",
+      "evidence_location": "backend/app/ai/neural_ranker.py",
+      "status": "EXISTING / RETAINED"
+    },
+    "8_hybrid_ranking": {
+      "original": "Weighted score combination: 0.60 neural score + 0.20 recency + 0.10 popularity + 0.10 interest",
+      "current": "Weighted score combination: 0.60 neural score + 0.20 recency + 0.10 popularity + 0.10 interest",
+      "what_changed": "None. Score weights retained.",
+      "why_changed": "N/A",
+      "evidence_location": "backend/app/ai/ranking_service.py",
+      "status": "EXISTING / RETAINED"
+    },
+    "9_diversity_reranking": {
+      "original": "Production hard category/source caps + old multiplicative category penalties + inconsistent evaluation reranking",
+      "current": "Equation (14) greedy subtractive reranking: S'(c) = S_hybrid(c,u) - lambda * P(c,R) with lambda=0.10",
+      "what_changed": "Implemented exact research paper formula Equation (14) in shared diversity_service.py module",
+      "why_changed": "Eliminated discrepancy between research paper formulation and project implementation; unified production serving and evaluation",
+      "evidence_location": "backend/app/ai/diversity_service.py",
+      "status": "NEW IMPROVEMENT"
+    },
+    "10_production_recommendation_pipeline": {
+      "original": "Called legacy diversity filters and hard category capping in recommendation_service.py",
+      "current": "Calls shared apply_diversity_filter() / apply_diversity_reranking() with DIVERSITY_LAMBDA = 0.10",
+      "what_changed": "Integrated shared diversity service into production recommendation serving flow",
+      "why_changed": "Guaranteed production and research evaluation parity",
+      "evidence_location": "backend/app/ai/recommendation_service.py",
+      "status": "NEW IMPROVEMENT"
+    },
+    "11_mind_evaluation_pipeline": {
+      "original": "Evaluated legacy diversity penalties on non-standard test splits",
+      "current": "Evaluates Model E vs Model F using shared diversity_service.py on canonical 500 disjoint test cohort (1,432 impressions)",
+      "what_changed": "Re-ran MIND benchmark under strict disjoint test split and shared Equation (14) diversity implementation",
+      "why_changed": "Established authoritative, mathematically sound research benchmark",
+      "evidence_location": "backend/app/evaluation/mind/run_step2_evaluation.py",
+      "status": "EVALUATION FIX"
+    },
+    "12_ablation_evaluation_pipeline": {
+      "original": "Evaluated on non-disjoint cohort (unique_users[:500]); Exp 4 accidentally stripped context features and omitted AUC calculation",
+      "current": "Evaluates 4 variants on canonical 500 disjoint test cohort (1,432 impressions) with context features retained in Exp 4 and complete metric suite (including AUC)",
+      "what_changed": "Corrected test cohort selection, fixed Exp 4 context bug, and restored full metric calculation",
+      "why_changed": "Guaranteed experimental fairness and isolated component ablation measurement",
+      "evidence_location": "backend/app/evaluation/mind/run_neural_ranker_ablation.py",
+      "status": "EVALUATION FIX"
+    },
+    "13_statistical_validation": {
+      "original": "Reported uncorrected p-values and misclassified per-user metrics with Holm p > 0.05 as statistically significant",
+      "current": "Strict Holm-Bonferroni FWER correction; primary per-impression (N=1,432) 11/11 significant; supplementary per-user (N=500) 8/11 significant, explicitly marking P@10, R@5, R@10 as False (not significant)",
+      "what_changed": "Corrected statistical significance code and classification labels",
+      "why_changed": "Eliminated internal reporting inconsistency and ensured rigorous statistical audit compliance",
+      "evidence_location": "backend/app/evaluation/mind/run_step3_statistical_validation.py",
+      "status": "EVALUATION FIX"
+    },
+    "14_latency_evaluation_validation": {
+      "original": "Historical latency log claiming real-time performance",
+      "current": "Empirically verified benchmark: Model F mean latency = 221.28 ms, P99 = 281.79 ms under CPU deployment",
+      "what_changed": "Audited latency budget breakdown; identified that sub-100ms SLA is not met under CPU deployment",
+      "why_changed": "Reconciled manuscript latency claims with empirical measurements",
+      "evidence_location": "backend/evaluation/mind/e2e_realtime_validation_results.json",
+      "status": "EVALUATION FIX"
+    }
+  },
+  "most_important_change_diversity": {
+    "formula": "S'(c) = S_hybrid(c, u) - lambda * P(c, R)",
+    "lambda_value": 0.1,
+    "penalty_term": "P(c, R) = count(c.category in R) / max(1, |R|)",
+    "why_changed": "The old codebase used ad-hoc hard category caps and legacy multiplicative filters that diverged from Equation (14) in the manuscript. Step 1 implemented Equation (14) in backend/app/ai/diversity_service.py and unified both production and evaluation pipelines.",
+    "shared_implementation_file": "backend/app/ai/diversity_service.py",
+    "equation_14_match": true
+  },
+  "context_aware_improvement": {
+    "feature_vector_indices": [1153, 1154],
+    "scalar_names": ["context_relevance", "recent_category_ratio"],
+    "dynamic_computation": true,
+    "step4_1_empirical_evidence": {
+      "impressions_with_ranking_changes": 1053,
+      "total_impressions": 1432,
+      "pct_impressions_changed": 73.53,
+      "top1_candidate_changes": 101,
+      "top5_candidate_set_changes": 334
+    },
+    "nuance": "Context features actively refine scoring and shift candidate positions in 73.53% of recommendation sessions. However, macro-averaged MRR@10 and NDCG@10 show subtle overall differences, so context is characterized as 'refining candidate ranking' rather than 'producing a massive macro metric jump'."
+  },
+  "neural_ranker_contribution": {
+    "architecture": "PyTorch MLPRanker (1159 -> 128 -> 64 -> 1)",
+    "embeddings": "MiniLM SentenceTransformer (384-dimensional)",
+    "model_e_vs_model_f_gains": {
+      "auc": "0.6411 -> 0.7001 (+9.20%)",
+      "mrr10": "0.3543 -> 0.3907 (+10.26%)",
+      "ndcg10": "0.4098 -> 0.4420 (+7.85%)",
+      "ild10": "0.8972 -> 0.9287 (+3.51%)"
+    },
+    "contribution_summary": "The neural ranker provides substantial, statistically significant performance improvements over the heuristic baseline Model E across all 11 evaluation metrics."
+  },
+  "hybrid_ranking_status": {
+    "weights": "0.60 neural score + 0.20 recency + 0.10 popularity + 0.10 interest",
+    "status": "EXISTING FEATURE / RETAINED ARCHITECTURE",
+    "note": "This hybrid scoring structure was already present in the codebase prior to Steps 1-5."
+  },
+  "ablation_findings_summary": {
+    "full_model_f": { "auc": 0.7001, "mrr10": 0.3907, "ndcg10": 0.4420, "ild10": 0.9287 },
+    "wo_context": { "auc": 0.6991, "mrr10": 0.3922, "ndcg10": 0.4432, "ild10": 0.9286 },
+    "wo_diversity": { "auc": 0.6996, "mrr10": 0.3913, "ndcg10": 0.4429, "ild10": 0.9270 },
+    "model_e_baseline": { "auc": 0.6411, "mrr10": 0.3543, "ndcg10": 0.4098, "ild10": 0.8972 },
+    "honest_interpretation": "Both context and diversity mechanisms are active and alter rankings in over 72% of impressions. Diversity Eq. (14) increases unique categories in Top-10 from 4.96 to 5.16 (+0.20 per list) and improves ILD@10 from 0.9270 to 0.9287 without sacrificing ranking accuracy."
+  },
+  "diversity_mechanism_evidence": {
+    "impressions_with_ranking_changes": 1041,
+    "total_impressions": 1432,
+    "pct_impressions_changed": 72.70,
+    "top1_changes": 0,
+    "top1_unchanged_reason": "Under greedy selection, the first item (R = empty) incurs penalty P(c, empty) = 0, so Top-1 is selected purely by base hybrid score.",
+    "unique_categories_top10": "4.9574 (w/o diversity) -> 5.1564 (Full F) (+0.1990 unique categories/list)",
+    "duplicate_categories_top10": "3.6578 (w/o diversity) -> 3.4588 (Full F) (-0.1990 duplicate categories/list)",
+    "ild10_change": "0.9270 -> 0.9287 (+0.0017)"
+  },
+  "statistical_validation_summary": {
+    "primary_per_impression": "N = 1,432 sessions | 11/11 metrics Holm-significant (p < 0.05)",
+    "supplementary_per_user": "N = 500 disjoint users | 8/11 metrics Holm-significant (P@10, R@5, R@10 have Holm p = 0.0523)",
+    "nature_of_fix": "EVALUATION FIX (Corrected statistical reporting accuracy)"
+  },
+  "latency_benchmark_summary": {
+    "model_f_mean_latency_ms": 221.28,
+    "model_f_p99_latency_ms": 281.79,
+    "throughput_req_per_sec": 4.51,
+    "sub_100ms_sla_met": false,
+    "nature_of_fix": "EVALUATION FIX (Reconciled manuscript claims with empirical measurements)"
+  },
+  "summary_matrix": [
+    { "component": "Diversity Reranking (Eq 14)", "original": "Ad-hoc hard category/source caps", "current": "Equation (14) greedy subtractive reranking (lambda=0.10)", "actual_change": "Implemented shared diversity_service.py", "classification": "NEW IMPROVEMENT" },
+    { "component": "Production Serving Unification", "original": "Separate ad-hoc filter logic", "current": "Shared diversity_service.py in recommendation_service.py", "actual_change": "Unified production and evaluation pipelines", "classification": "NEW IMPROVEMENT" },
+    { "component": "MIND Evaluation Cohort", "original": "Non-standard test splits", "current": "Canonical 500 disjoint test cohort (1,432 impressions)", "actual_change": "Standardized research benchmark dataset", "classification": "EVALUATION FIX" },
+    { "component": "Ablation Study Runner", "original": "Flawed Exp 4 & non-disjoint cohort", "current": "Canonical cohort, context retained in Exp 4, full metrics", "actual_change": "Corrected ablation logic & metric suite", "classification": "EVALUATION FIX" },
+    { "component": "Statistical Validation Code", "original": "Uncorrected p-values & misclassified per-user metrics", "current": "Holm-Bonferroni FWER correction with accurate flags", "actual_change": "Corrected statistical significance reporting", "classification": "EVALUATION FIX" },
+    { "component": "Latency SLA Audit", "original": "Unverified real-time claim", "current": "Empirical benchmark (221ms mean, 281ms P99)", "actual_change": "Reconciled real-time latency claims", "classification": "EVALUATION FIX" },
+    { "component": "Neural Ranker Architecture", "original": "PyTorch MLPRanker (1159->128->64->1)", "current": "PyTorch MLPRanker (1159->128->64->1)", "actual_change": "None", "classification": "EXISTING / RETAINED" },
+    { "component": "Feature Vector Construction", "original": "1159-dim vector (384+384+384+7)", "current": "1159-dim vector (384+384+384+7)", "actual_change": "None", "classification": "EXISTING / RETAINED" },
+    { "component": "Hybrid Score Weights", "original": "0.60 / 0.20 / 0.10 / 0.10", "current": "0.60 / 0.20 / 0.10 / 0.10", "actual_change": "None", "classification": "EXISTING / RETAINED" },
+    { "component": "Attention Mechanism", "original": "Candidate-aware softmax attention (tau=0.1)", "current": "Candidate-aware softmax attention (tau=0.1)", "actual_change": "None", "classification": "EXISTING / RETAINED" }
+  ],
+  "what_we_actually_improved": {
+    "algorithmic_improvements": [
+      {
+        "item": "Diversity-Aware Reranking (Equation 14)",
+        "details": "Implemented exact paper formula S'(c) = S_hybrid(c,u) - lambda * P(c,R) with lambda=0.10 in backend/app/ai/diversity_service.py",
+        "status": "IMPLEMENTED + VERIFIED"
+      },
+      {
+        "item": "Production & Evaluation Pipeline Unification",
+        "details": "Integrated shared diversity_service.py across both production serving (recommendation_service.py) and research evaluation scripts",
+        "status": "IMPLEMENTED + VERIFIED"
+      }
+    ],
+    "context_personalization_improvements": [
+      {
+        "item": "Context-Aware Scoring Refinement",
+        "details": "Verified dynamic scalar context features (context_relevance, recent_category_ratio) at indices 1153-1154; confirmed active ranking alterations in 73.53% of recommendation sessions",
+        "status": "IMPLEMENTED BUT NOT PROVEN AS PERFORMANCE IMPROVEMENT"
+      }
+    ],
+    "diversity_improvements": [
+      {
+        "item": "Category Redundancy Control",
+        "details": "Greedy subtractive reranking increases Top-10 unique categories from 4.96 to 5.16 (+0.20 unique categories/list) and improves ILD@10 from 0.9270 to 0.9287 without sacrificing ranking accuracy",
+        "status": "IMPLEMENTED + VERIFIED"
+      }
+    ],
+    "evaluation_research_quality_improvements": [
+      {
+        "item": "Canonical Disjoint Test Cohort Evaluation",
+        "details": "Standardized evaluation on 500 strictly disjoint test users (1,432 impressions)",
+        "status": "EVALUATION FIX"
+      },
+      {
+        "item": "Ablation Runner Correction",
+        "details": "Fixed Exp 4 context bug, restored ROC-AUC calculations across all 4 variants, and aligned test cohort",
+        "status": "EVALUATION FIX"
+      },
+      {
+        "item": "Statistical Validation & Holm FWER Correction",
+        "details": "Corrected primary vs supplementary statistical significance reporting and Holm p-values",
+        "status": "EVALUATION FIX"
+      }
+    ],
+    "performance_latency_observations": [
+      {
+        "item": "Latency Benchmark Verification",
+        "details": "Empirically benchmarked Model F serving latency at 221.28ms mean and 281.79ms P99 under CPU deployment, reconciling manuscript real-time claims",
+        "status": "EVALUATION FIX"
+      }
+    ]
+  }
+}

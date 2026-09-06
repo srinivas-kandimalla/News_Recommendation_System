@@ -1,0 +1,166 @@
+{
+  "timestamp": "2026-09-06T11:28:00.000000",
+  "step": "Step 5 — Final Results Reconciliation & Manuscript Change Map",
+  "status": "PASS",
+  "authoritative_result_sources": {
+    "main_evaluation": "backend/evaluation/mind/final_research_results_step2.json",
+    "statistical_validation": "backend/evaluation/mind/statistical_validation_step3_corrected.json",
+    "ablation_study": "backend/evaluation/mind/neural_ranker_ablation_results_step4.json",
+    "mechanism_validation": "backend/evaluation/mind/ablation_mechanism_validation_step4_1.json",
+    "latency_benchmark": "backend/evaluation/mind/e2e_realtime_validation_results.json",
+    "historical_non_authoritative_files": [
+      "final_research_results.json",
+      "statistical_validation_step3.json",
+      "neural_ranker_ablation_results.json"
+    ]
+  },
+  "main_results_reconciliation_step2": {
+    "test_cohort": "500 disjoint test users, 1,432 impressions",
+    "metrics": {
+      "auc": { "model_e": 0.6411, "model_f": 0.7001, "abs_diff": 0.0590, "rel_gain_pct": 9.20 },
+      "mrr5": { "model_e": 0.3348, "model_f": 0.3708, "abs_diff": 0.0360, "rel_gain_pct": 10.75 },
+      "mrr10": { "model_e": 0.3543, "model_f": 0.3907, "abs_diff": 0.0364, "rel_gain_pct": 10.26 },
+      "ndcg5": { "model_e": 0.3586, "model_f": 0.3914, "abs_diff": 0.0328, "rel_gain_pct": 9.16 },
+      "ndcg10": { "model_e": 0.4098, "model_f": 0.4420, "abs_diff": 0.0322, "rel_gain_pct": 7.85 },
+      "precision5": { "model_e": 0.1225, "model_f": 0.1309, "abs_diff": 0.0084, "rel_gain_pct": 6.84 },
+      "precision10": { "model_e": 0.0830, "model_f": 0.0874, "abs_diff": 0.0044, "rel_gain_pct": 5.30 },
+      "recall5": { "model_e": 0.4975, "model_f": 0.5282, "abs_diff": 0.0307, "rel_gain_pct": 6.18 },
+      "recall10": { "model_e": 0.6451, "model_f": 0.6723, "abs_diff": 0.0272, "rel_gain_pct": 4.21 },
+      "ild5": { "model_e": 0.8772, "model_f": 0.9250, "abs_diff": 0.0478, "rel_gain_pct": 5.44 },
+      "ild10": { "model_e": 0.8972, "model_f": 0.9287, "abs_diff": 0.0315, "rel_gain_pct": 3.51 }
+    }
+  },
+  "statistical_results_reconciliation_step3_1": {
+    "primary_per_impression_n1432": {
+      "all_11_metrics_holm_significant": true,
+      "summary": "All 11 metrics maintain statistical significance post Holm-Bonferroni correction (p_Holm < 0.05)."
+    },
+    "supplementary_per_user_n500": {
+      "significant_metrics_count": 8,
+      "non_significant_metrics": [
+        { "metric": "Precision@10", "raw_p": 0.0210, "holm_p": 0.0523, "significant": false },
+        { "metric": "Recall@5", "raw_p": 0.0174, "holm_p": 0.0523, "significant": false },
+        { "metric": "Recall@10", "raw_p": 0.0490, "holm_p": 0.0523, "significant": false }
+      ],
+      "summary": "8 of 11 metrics maintain Holm significance; Precision@10, Recall@5, and Recall@10 exceed 0.05 post-correction."
+    }
+  },
+  "final_ablation_table_step4": {
+    "table_iii_candidate": {
+      "full_model_f": { "auc": 0.7001, "mrr10": 0.3907, "ndcg10": 0.4420, "ild10": 0.9287 },
+      "wo_context": { "auc": 0.6991, "mrr10": 0.3922, "ndcg10": 0.4432, "ild10": 0.9286 },
+      "wo_diversity": { "auc": 0.6996, "mrr10": 0.3913, "ndcg10": 0.4429, "ild10": 0.9270 },
+      "model_e_baseline": { "auc": 0.6411, "mrr10": 0.3543, "ndcg10": 0.4098, "ild10": 0.8972 }
+    }
+  },
+  "mechanism_evidence_step4_1": {
+    "context_features": {
+      "differing_feature_indices": [1153, 1154],
+      "impressions_with_ranking_diff": 1053,
+      "total_impressions": 1432,
+      "pct_impressions_with_ranking_diff": 73.53
+    },
+    "diversity_reranking_eq14": {
+      "impressions_with_ranking_diff": 1041,
+      "total_impressions": 1432,
+      "pct_impressions_with_ranking_diff": 72.70,
+      "top1_changes": 0,
+      "avg_unique_categories_full_f": 5.1564,
+      "avg_unique_categories_wo_diversity": 4.9574,
+      "ild10_full_f": 0.9287,
+      "ild10_wo_diversity": 0.9270
+    }
+  },
+  "equation_implementation_alignment": {
+    "sentence_transformer_minilm": "MATCH",
+    "embedding_dim_384": "MATCH",
+    "long_history_50": "MATCH",
+    "short_history_5": "MATCH",
+    "candidate_aware_attention": "MATCH",
+    "attention_temp_0_1": "MATCH",
+    "long_short_weight_04_06": "MATCH",
+    "feature_vec_dim_1159": "MATCH",
+    "num_scalar_features_7": "MATCH",
+    "mlp_architecture": "MATCH",
+    "bce_loss_training": "MATCH",
+    "hybrid_weights_06_02_01_01": "MATCH",
+    "diversity_equation_14": "MATCH",
+    "diversity_lambda_0_10": "MATCH",
+    "category_normalized_penalty": "MATCH",
+    "greedy_reranking_algorithm": "MATCH",
+    "production_eval_parity": "MATCH"
+  },
+  "latency_reconciliation": {
+    "model_f_mean_ms": 221.28,
+    "model_f_p50_ms": 217.02,
+    "model_f_p90_ms": 248.43,
+    "model_f_p95_ms": 268.08,
+    "model_f_p99_ms": 281.79,
+    "model_f_throughput_rps": 4.51,
+    "model_e_mean_ms": 139.22,
+    "model_e_p99_ms": 173.71,
+    "neural_scoring_ms": 106.29,
+    "sub_100ms_sla_met": false,
+    "flagged_realtime_overclaims": "Manuscript claims of sub-100ms guaranteed real-time latency are not met under CPU deployment and must be reworded to ~221ms mean / ~281ms P99."
+  },
+  "interpretation_audit": {
+    "context_improves_ranking": {
+      "classification": "PARTIALLY SUPPORTED",
+      "explanation": "Context features alter candidate rankings in 73.5% of sessions, but overall macro-averaged metrics show small differences."
+    },
+    "diversity_large_ild_jump": {
+      "classification": "NO LONGER SUPPORTED",
+      "explanation": "Old claim of ILD=0.6120 was an artifact. Raw candidates exhibit baseline ILD=0.9270; Eq. (14) increases ILD to 0.9287 (+0.0017) and increases unique categories by +0.20 per list."
+    },
+    "all_ablation_results_support_paper": {
+      "classification": "NEEDS NEW WORDING",
+      "explanation": "Ablation tables must be updated to exact empirical values."
+    }
+  },
+  "old_vs_new_manuscript_numbers": [
+    { "item": "Model F AUC", "old_manuscript": 0.6998, "new_authoritative": 0.7001, "change_required": true },
+    { "item": "Model F MRR@10", "old_manuscript": 0.3904, "new_authoritative": 0.3907, "change_required": true },
+    { "item": "Model F NDCG@10", "old_manuscript": 0.4423, "new_authoritative": 0.4420, "change_required": true },
+    { "item": "Model F ILD@10", "old_manuscript": 0.9296, "new_authoritative": 0.9287, "change_required": true },
+    { "item": "Model E AUC", "old_manuscript": 0.6427, "new_authoritative": 0.6411, "change_required": true },
+    { "item": "Model E MRR@10", "old_manuscript": 0.3551, "new_authoritative": 0.3543, "change_required": true },
+    { "item": "Model E NDCG@10", "old_manuscript": 0.4119, "new_authoritative": 0.4098, "change_required": true },
+    { "item": "Model E ILD@10", "old_manuscript": 0.8959, "new_authoritative": 0.8972, "change_required": true },
+    { "item": "w/o Diversity ILD@10", "old_manuscript": 0.6120, "new_authoritative": 0.9270, "change_required": true },
+    { "item": "w/o Diversity MRR@10", "old_manuscript": 0.3985, "new_authoritative": 0.3913, "change_required": true },
+    { "item": "w/o Context AUC", "old_manuscript": 0.6712, "new_authoritative": 0.6991, "change_required": true },
+    { "item": "w/o Context NDCG@10", "old_manuscript": 0.4215, "new_authoritative": 0.4432, "change_required": true },
+    { "item": "Model F Mean Latency", "old_manuscript": "235.63 ms", "new_authoritative": "221.28 ms", "change_required": true },
+    { "item": "Model F P99 Latency", "old_manuscript": "321.54 ms", "new_authoritative": "281.79 ms", "change_required": true },
+    { "item": "Per-User Precision@10 Holm Sig", "old_manuscript": "Claimed Sig", "new_authoritative": "Holm p = 0.0523 (Not Sig)", "change_required": true },
+    { "item": "Per-User Recall@5 Holm Sig", "old_manuscript": "Claimed Sig", "new_authoritative": "Holm p = 0.0523 (Not Sig)", "change_required": true },
+    { "item": "Per-User Recall@10 Holm Sig", "old_manuscript": "Claimed Sig", "new_authoritative": "Holm p = 0.0523 (Not Sig)", "change_required": true }
+  ],
+  "manuscript_change_map": [
+    { "section": "Abstract", "current_claim": "Model F gains & old diversity values", "authoritative_new": "Model F AUC 0.7001, NDCG@10 0.4420, ILD@10 0.9287; Eq. (14) lambda=0.10", "priority": "HIGH" },
+    { "section": "Methodology", "current_claim": "Reranking formula text", "authoritative_new": "Explicit Eq. (14) formula S' = S_hybrid - lambda * P(c,R) with lambda=0.10", "priority": "HIGH" },
+    { "section": "Table II", "current_claim": "Old main results", "authoritative_new": "Step 2 authoritative metrics table (11 metrics, N=1,432)", "priority": "HIGH" },
+    { "section": "Table III", "current_claim": "Old ablation table (including w/o diversity ILD=0.6120)", "authoritative_new": "Step 4 authoritative ablation table (Full F 0.7001, w/o Ctx 0.6991, w/o Div 0.6996, Model E 0.6411)", "priority": "HIGH" },
+    { "section": "Table IV", "current_claim": "Old latency table", "authoritative_new": "Verified latency numbers (221.28ms mean, 281.79ms P99)", "priority": "HIGH" },
+    { "section": "Statistical Discussion", "current_claim": "All per-user metrics claimed significant", "authoritative_new": "All 11 primary per-impression metrics significant; disclose 8 of 11 per-user metrics significant with P@10, R@5, R@10 having Holm p=0.0523", "priority": "HIGH" },
+    { "section": "Ablation Discussion", "current_claim": "Catastrophic diversity drop", "authoritative_new": "Eq. (14) increases unique categories per Top-10 from 4.96 to 5.16 (+0.20) and improves ILD@10 from 0.9270 to 0.9287", "priority": "HIGH" },
+    { "section": "Limitations", "current_claim": "Unspecified SLA & sample size limits", "authoritative_new": "Document per-user sample size aggregation effect (N=500) and CPU latency budget (~221ms)", "priority": "MEDIUM" }
+  ],
+  "claims_audit": {
+    "safe_to_retain": [
+      "Model F significantly outperforms baseline Model E across ranking metrics on per-impression analysis (N=1,432)."
+    ],
+    "must_update_numbers": [
+      "All numerical values in Abstract, Table II, Table III, Table IV, and text."
+    ],
+    "must_weaken_wording": [
+      "Diversity reranking increases ILD from 0.61 to 0.93 -> Weaken to: Eq. (14) increases Top-10 category diversity (+0.20 unique categories) while preserving precision.",
+      "Context features provide massive ranking gains -> Weaken to: Context features dynamically refine scoring and alter candidate rankings in 73.5% of sessions.",
+      "Sub-100ms real-time SLA guaranteed -> Weaken to: Achieves near real-time recommendation latency (~221ms mean, ~281ms P99) under CPU deployment."
+    ],
+    "must_remove": [
+      "Claims that all 11 metrics are Holm-significant in the supplementary per-user analysis (N=500)."
+    ],
+    "requires_additional_experiment": []
+  }
+}

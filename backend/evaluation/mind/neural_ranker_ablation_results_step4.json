@@ -1,0 +1,215 @@
+{
+  "timestamp": "2026-09-06T11:14:41.308317",
+  "step": "Step 4 \u2014 Ablation Study post Diversity Reranking Eq. 14 Implementation",
+  "dataset": "MIND-small",
+  "test_cohort": "Indices 10,000 to 10,500 in behaviors.tsv (500 users)",
+  "users_tested": 500,
+  "evaluated_impressions": 1432,
+  "skipped_impressions": 0,
+  "elapsed_sec": 187.8,
+  "diversity_algorithm": "Equation 14: S'(c) = S_hybrid(c, u) - lambda * P(c, R) via app.ai.diversity_service",
+  "diversity_lambda": 0.1,
+  "variant_definitions": {
+    "exp1_heuristic_model_e": "Variant D: Baseline Heuristic Ranker + Diversity Eq. (14)",
+    "exp2_neural_ranker_model_f": "Variant A: Full Neural Ranker + Context Features + Hybrid Score + Diversity Eq. (14)",
+    "exp3_neural_no_context": "Variant B: Neural Ranker WITHOUT Context Features + Hybrid Score + Diversity Eq. (14)",
+    "exp4_neural_no_diversity": "Variant C: Full Neural Ranker WITH Context Features + Hybrid Score WITHOUT Diversity Reranking"
+  },
+  "results": {
+    "exp1_heuristic_model_e": {
+      "auc": 0.6411,
+      "p5": 0.1225,
+      "p10": 0.083,
+      "r5": 0.4975,
+      "r10": 0.6451,
+      "mrr5": 0.3348,
+      "mrr10": 0.3543,
+      "ndcg5": 0.3586,
+      "ndcg10": 0.4098,
+      "ild5": 0.8772,
+      "ild10": 0.8972
+    },
+    "exp2_neural_ranker_model_f": {
+      "auc": 0.7001,
+      "p5": 0.1309,
+      "p10": 0.0874,
+      "r5": 0.5282,
+      "r10": 0.6723,
+      "mrr5": 0.3708,
+      "mrr10": 0.3907,
+      "ndcg5": 0.3914,
+      "ndcg10": 0.442,
+      "ild5": 0.925,
+      "ild10": 0.9287
+    },
+    "exp3_neural_no_context": {
+      "auc": 0.6991,
+      "p5": 0.1303,
+      "p10": 0.0881,
+      "r5": 0.5248,
+      "r10": 0.6752,
+      "mrr5": 0.372,
+      "mrr10": 0.3922,
+      "ndcg5": 0.3905,
+      "ndcg10": 0.4432,
+      "ild5": 0.925,
+      "ild10": 0.9286
+    },
+    "exp4_neural_no_diversity": {
+      "auc": 0.6996,
+      "p5": 0.1313,
+      "p10": 0.088,
+      "r5": 0.5282,
+      "r10": 0.6744,
+      "mrr5": 0.3711,
+      "mrr10": 0.3913,
+      "ndcg5": 0.3914,
+      "ndcg10": 0.4429,
+      "ild5": 0.9217,
+      "ild10": 0.927
+    }
+  },
+  "key_table_summary": {
+    "full_model_f": {
+      "auc": 0.7001,
+      "mrr10": 0.3907,
+      "ndcg10": 0.442,
+      "ild10": 0.9287
+    },
+    "wo_context": {
+      "auc": 0.6991,
+      "mrr10": 0.3922,
+      "ndcg10": 0.4432,
+      "ild10": 0.9286
+    },
+    "wo_diversity": {
+      "auc": 0.6996,
+      "mrr10": 0.3913,
+      "ndcg10": 0.4429,
+      "ild10": 0.927
+    },
+    "model_e": {
+      "auc": 0.6411,
+      "mrr10": 0.3543,
+      "ndcg10": 0.4098,
+      "ild10": 0.8972
+    }
+  },
+  "old_vs_new_comparison": {
+    "exp1_heuristic_model_e": {
+      "auc": {
+        "old": 0.6234,
+        "new": 0.6411,
+        "abs_diff": 0.0177,
+        "rel_change_pct": 2.84
+      },
+      "mrr10": {
+        "old": 0.3299,
+        "new": 0.3543,
+        "abs_diff": 0.0244,
+        "rel_change_pct": 7.4
+      },
+      "ndcg10": {
+        "old": 0.3875,
+        "new": 0.4098,
+        "abs_diff": 0.0223,
+        "rel_change_pct": 5.75
+      },
+      "ild10": {
+        "old": 0.8944,
+        "new": 0.8972,
+        "abs_diff": 0.0028,
+        "rel_change_pct": 0.31
+      }
+    },
+    "exp2_neural_ranker_model_f": {
+      "auc": {
+        "old": 0.6234,
+        "new": 0.7001,
+        "abs_diff": 0.0767,
+        "rel_change_pct": 12.3
+      },
+      "mrr10": {
+        "old": 0.3299,
+        "new": 0.3907,
+        "abs_diff": 0.0608,
+        "rel_change_pct": 18.43
+      },
+      "ndcg10": {
+        "old": 0.3875,
+        "new": 0.442,
+        "abs_diff": 0.0545,
+        "rel_change_pct": 14.06
+      },
+      "ild10": {
+        "old": 0.8944,
+        "new": 0.9287,
+        "abs_diff": 0.0343,
+        "rel_change_pct": 3.83
+      }
+    },
+    "exp3_neural_no_context": {
+      "auc": {
+        "old": null,
+        "new": 0.6991,
+        "abs_diff": null,
+        "rel_change_pct": null
+      },
+      "mrr10": {
+        "old": 0.3299,
+        "new": 0.3922,
+        "abs_diff": 0.0623,
+        "rel_change_pct": 18.88
+      },
+      "ndcg10": {
+        "old": 0.386,
+        "new": 0.4432,
+        "abs_diff": 0.0572,
+        "rel_change_pct": 14.82
+      },
+      "ild10": {
+        "old": 0.8953,
+        "new": 0.9286,
+        "abs_diff": 0.0333,
+        "rel_change_pct": 3.72
+      }
+    },
+    "exp4_neural_no_diversity": {
+      "auc": {
+        "old": null,
+        "new": 0.6996,
+        "abs_diff": null,
+        "rel_change_pct": null
+      },
+      "mrr10": {
+        "old": 0.2417,
+        "new": 0.3913,
+        "abs_diff": 0.1496,
+        "rel_change_pct": 61.89
+      },
+      "ndcg10": {
+        "old": 0.2923,
+        "new": 0.4429,
+        "abs_diff": 0.1506,
+        "rel_change_pct": 51.52
+      },
+      "ild10": {
+        "old": 0.9399,
+        "new": 0.927,
+        "abs_diff": -0.0129,
+        "rel_change_pct": -1.37
+      }
+    }
+  },
+  "reproducibility": "The evaluation is deterministic for the fixed input data, configuration, model weights, and execution environment.",
+  "verification": {
+    "canonical_cohort_verified": true,
+    "full_f_uses_eq14": true,
+    "wo_context_uses_eq14": true,
+    "model_e_uses_eq14": true,
+    "wo_diversity_omits_eq14": true,
+    "wo_diversity_retains_context": true,
+    "auc_available_all_variants": true,
+    "zero_evaluation_errors": true
+  }
+}

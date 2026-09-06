@@ -1,0 +1,244 @@
+{
+  "timestamp": "2026-09-06T11:25:52.879836",
+  "step": "Step 4.1 \u2014 Ablation Mechanism Validation Diagnostic",
+  "evaluated_impressions": 1432,
+  "evaluated_users": 500,
+  "section_1_context_feature_verification": {
+    "scalar_feature_names": [
+      "semantic_score",
+      "context_relevance",
+      "recent_category_ratio",
+      "temporal_affinity",
+      "recency_score",
+      "popularity_score",
+      "interest_score"
+    ],
+    "scalar_indices_in_1159_vector": [
+      1152,
+      1153,
+      1154,
+      1155,
+      1156,
+      1157,
+      1158
+    ],
+    "representative_samples": [
+      {
+        "impression_id": "77127",
+        "candidate_id": "N41020",
+        "category": "entertainment",
+        "full_f_scalars": {
+          "semantic_score": 0.205076,
+          "context_relevance": 1.0,
+          "recent_category_ratio": 0.0
+        },
+        "wo_context_scalars": {
+          "semantic_score": 0.205076,
+          "context_relevance": 1.0,
+          "recent_category_ratio": 0.0
+        },
+        "feature_vector_dim": 1159,
+        "differing_feature_indices": [],
+        "differing_feature_count": 0,
+        "neural_prob_full_f": 0.136864,
+        "neural_prob_wo_context": 0.136864
+      },
+      {
+        "impression_id": "77127",
+        "candidate_id": "N49180",
+        "category": "lifestyle",
+        "full_f_scalars": {
+          "semantic_score": 0.002046,
+          "context_relevance": 1.0,
+          "recent_category_ratio": 0.0
+        },
+        "wo_context_scalars": {
+          "semantic_score": 0.002046,
+          "context_relevance": 1.0,
+          "recent_category_ratio": 0.0
+        },
+        "feature_vector_dim": 1159,
+        "differing_feature_indices": [],
+        "differing_feature_count": 0,
+        "neural_prob_full_f": 0.046491,
+        "neural_prob_wo_context": 0.046491
+      },
+      {
+        "impression_id": "148608",
+        "candidate_id": "N40109",
+        "category": "weather",
+        "full_f_scalars": {
+          "semantic_score": 0.29948,
+          "context_relevance": 1.0,
+          "recent_category_ratio": 0.0
+        },
+        "wo_context_scalars": {
+          "semantic_score": 0.29948,
+          "context_relevance": 1.0,
+          "recent_category_ratio": 0.0
+        },
+        "feature_vector_dim": 1159,
+        "differing_feature_indices": [],
+        "differing_feature_count": 0,
+        "neural_prob_full_f": 0.676072,
+        "neural_prob_wo_context": 0.676072
+      },
+      {
+        "impression_id": "148608",
+        "candidate_id": "N48017",
+        "category": "news",
+        "full_f_scalars": {
+          "semantic_score": 0.127716,
+          "context_relevance": 1.04,
+          "recent_category_ratio": 0.2
+        },
+        "wo_context_scalars": {
+          "semantic_score": 0.127716,
+          "context_relevance": 1.0,
+          "recent_category_ratio": 0.0
+        },
+        "feature_vector_dim": 1159,
+        "differing_feature_indices": [
+          1153,
+          1154
+        ],
+        "differing_feature_count": 2,
+        "neural_prob_full_f": 0.42283,
+        "neural_prob_wo_context": 0.415963
+      }
+    ],
+    "verification_summary": "Full F feature vector incorporates exact category density and context relevance factors in indices 1153 and 1154, whereas w/o Context hardcodes 1.0 and 0.0 respectively."
+  },
+  "section_2_context_ranking_differences": {
+    "total_impressions": 1432,
+    "impressions_with_ranking_diff": 1053,
+    "pct_impressions_with_ranking_diff": 73.53,
+    "top1_changes": 101,
+    "top5_set_changes": 334,
+    "top10_set_changes": 431,
+    "avg_changed_positions_per_impression": 21.155,
+    "max_changed_positions_in_impression": 274,
+    "explanation": "Context relevance and category density modify feature indices 1153 and 1154, resulting in ranking position shifts in impressions where candidate context signals vary across candidates."
+  },
+  "section_3_diversity_ranking_differences": {
+    "total_impressions": 1432,
+    "impressions_with_ranking_diff": 1041,
+    "pct_impressions_with_ranking_diff": 72.7,
+    "top1_changes": 0,
+    "top5_set_changes": 342,
+    "top10_set_changes": 333,
+    "avg_changed_positions_per_impression": 19.3073,
+    "max_changed_positions_in_impression": 225,
+    "representative_walkthrough": [
+      {
+        "impression_id": "77127",
+        "candidates_walkthrough": [
+          {
+            "rank_position": 1,
+            "candidate_id": "N15315",
+            "category": "health",
+            "base_hybrid_score": 0.861381,
+            "diversity_penalty": 0.0,
+            "adjusted_score": 0.861381,
+            "original_no_diversity_rank": 1,
+            "rank_changed": false
+          },
+          {
+            "rank_position": 2,
+            "candidate_id": "N33755",
+            "category": "sports",
+            "base_hybrid_score": 0.851397,
+            "diversity_penalty": 0.0,
+            "adjusted_score": 0.851397,
+            "original_no_diversity_rank": 2,
+            "rank_changed": false
+          },
+          {
+            "rank_position": 3,
+            "candidate_id": "N29340",
+            "category": "news",
+            "base_hybrid_score": 0.814831,
+            "diversity_penalty": 0.0,
+            "adjusted_score": 0.814831,
+            "original_no_diversity_rank": 4,
+            "rank_changed": true
+          },
+          {
+            "rank_position": 4,
+            "candidate_id": "N63970",
+            "category": "finance",
+            "base_hybrid_score": 0.811768,
+            "diversity_penalty": 0.0,
+            "adjusted_score": 0.811768,
+            "original_no_diversity_rank": 5,
+            "rank_changed": true
+          },
+          {
+            "rank_position": 5,
+            "candidate_id": "N7821",
+            "category": "sports",
+            "base_hybrid_score": 0.821528,
+            "diversity_penalty": 0.025,
+            "adjusted_score": 0.796528,
+            "original_no_diversity_rank": 3,
+            "rank_changed": true
+          }
+        ]
+      }
+    ]
+  },
+  "section_4_diversity_metrics_and_category_distributions": {
+    "ild10_distribution": {
+      "full_model_f": {
+        "mean": 0.9287,
+        "median": 0.9333,
+        "std": 0.0439,
+        "min": 0.623,
+        "max": 1.0883,
+        "p25": 0.9118,
+        "p75": 0.9528
+      },
+      "wo_diversity": {
+        "mean": 0.927,
+        "median": 0.9324,
+        "std": 0.0453,
+        "min": 0.623,
+        "max": 1.0883,
+        "p25": 0.909,
+        "p75": 0.9517
+      },
+      "mean_difference": 0.0017
+    },
+    "category_repetition_statistics_top10": {
+      "full_model_f": {
+        "avg_unique_categories": 5.1564,
+        "avg_duplicate_categories": 3.4588,
+        "max_duplicate_categories": 9,
+        "pct_lists_with_repeated_categories": 90.71
+      },
+      "wo_diversity": {
+        "avg_unique_categories": 4.9574,
+        "avg_duplicate_categories": 3.6578,
+        "max_duplicate_categories": 9,
+        "pct_lists_with_repeated_categories": 90.71
+      }
+    }
+  },
+  "section_6_implementation_bugs_check": {
+    "diversity_applied_after_metrics": false,
+    "diversity_applied_to_wrong_score": false,
+    "diversity_applied_to_subset_only": false,
+    "candidate_categories_missing": false,
+    "context_features_identical_between_variants": false,
+    "context_features_omitted_from_both": false,
+    "neural_model_output_bypassed": false,
+    "hybrid_score_not_using_neural_probability": false,
+    "candidate_ordering_fixed_before_reranking": false,
+    "diversity_lambda_not_010": false,
+    "ranking_performed_before_diversity": false,
+    "incorrect_candidate_metadata": false,
+    "metric_calculation_using_prereranked_lists": false
+  },
+  "conclusion_status": "PASS",
+  "summary": "Step 4 results are mechanically valid and genuinely produced by the intended ablation mechanisms."
+}

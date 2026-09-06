@@ -1,0 +1,169 @@
+{
+  "timestamp": "2026-09-06T10:26:00.248005",
+  "step": "Step 2 \u2014 Research Evaluation post Diversity Reranking Eq. 14 Implementation",
+  "diversity_algorithm": "Equation 14: S'(c) = S_hybrid(c, u) - lambda * P(c, R) via app.ai.diversity_service",
+  "diversity_lambda": 0.1,
+  "reproducibility": {
+    "framework_title": "Nexora \u2014 Context-Aware Personalized News Recommendation System",
+    "model_architecture": "PyTorch MLPRanker (1159 -> 128 -> 64 -> 1)",
+    "feature_dimension": 1159,
+    "training_seed": 42,
+    "disjoint_test_cohort": "Indices 10,000 to 10,500 in behaviors.tsv (500 users)",
+    "training_users_count": 8000,
+    "validation_users_count": 2000,
+    "test_users_count": 500,
+    "user_overlap": 0,
+    "use_neural_ranker_default": true
+  },
+  "main_results_table": {
+    "auc": {
+      "model_e": 0.6411,
+      "model_f": 0.7001,
+      "absolute_diff": 0.059,
+      "relative_diff_pct": 9.2,
+      "paired_t_statistic": 6.4902,
+      "paired_t_pvalue": 1.1784006023437065e-10,
+      "wilcoxon_pvalue": 7.84561098905557e-10,
+      "cohens_d_effect_size": 0.1715,
+      "statistically_significant_p005": true
+    },
+    "mrr5": {
+      "model_e": 0.3348,
+      "model_f": 0.3708,
+      "absolute_diff": 0.036,
+      "relative_diff_pct": 10.75,
+      "paired_t_statistic": 3.3649,
+      "paired_t_pvalue": 0.0007859092135055301,
+      "wilcoxon_pvalue": 0.0005563707354769739,
+      "cohens_d_effect_size": 0.0889,
+      "statistically_significant_p005": true
+    },
+    "mrr10": {
+      "model_e": 0.3543,
+      "model_f": 0.3907,
+      "absolute_diff": 0.0364,
+      "relative_diff_pct": 10.26,
+      "paired_t_statistic": 3.5714,
+      "paired_t_pvalue": 0.00036679091508746287,
+      "wilcoxon_pvalue": 0.00013041967240413785,
+      "cohens_d_effect_size": 0.0944,
+      "statistically_significant_p005": true
+    },
+    "ndcg5": {
+      "model_e": 0.3586,
+      "model_f": 0.3914,
+      "absolute_diff": 0.0328,
+      "relative_diff_pct": 9.16,
+      "paired_t_statistic": 3.4629,
+      "paired_t_pvalue": 0.0005501808042841319,
+      "wilcoxon_pvalue": 0.0003567536089417154,
+      "cohens_d_effect_size": 0.0915,
+      "statistically_significant_p005": true
+    },
+    "ndcg10": {
+      "model_e": 0.4098,
+      "model_f": 0.442,
+      "absolute_diff": 0.0322,
+      "relative_diff_pct": 7.85,
+      "paired_t_statistic": 3.766,
+      "paired_t_pvalue": 0.00017258093932583988,
+      "wilcoxon_pvalue": 8.998059113492087e-05,
+      "cohens_d_effect_size": 0.0995,
+      "statistically_significant_p005": true
+    },
+    "precision5": {
+      "model_e": 0.1225,
+      "model_f": 0.1309,
+      "absolute_diff": 0.0084,
+      "relative_diff_pct": 6.84,
+      "paired_t_statistic": 2.673,
+      "paired_t_pvalue": 0.0076021183378593635,
+      "wilcoxon_pvalue": 0.007302755935392786,
+      "cohens_d_effect_size": 0.0706,
+      "statistically_significant_p005": true
+    },
+    "precision10": {
+      "model_e": 0.083,
+      "model_f": 0.0874,
+      "absolute_diff": 0.0044,
+      "relative_diff_pct": 5.3,
+      "paired_t_statistic": 2.7665,
+      "paired_t_pvalue": 0.005739325992411112,
+      "wilcoxon_pvalue": 0.010796516473335651,
+      "cohens_d_effect_size": 0.0731,
+      "statistically_significant_p005": true
+    },
+    "recall5": {
+      "model_e": 0.4975,
+      "model_f": 0.5282,
+      "absolute_diff": 0.0307,
+      "relative_diff_pct": 6.18,
+      "paired_t_statistic": 2.606,
+      "paired_t_pvalue": 0.009256537112033926,
+      "wilcoxon_pvalue": 0.011217897741180916,
+      "cohens_d_effect_size": 0.0689,
+      "statistically_significant_p005": true
+    },
+    "recall10": {
+      "model_e": 0.6451,
+      "model_f": 0.6723,
+      "absolute_diff": 0.0272,
+      "relative_diff_pct": 4.21,
+      "paired_t_statistic": 2.4709,
+      "paired_t_pvalue": 0.013592060664044222,
+      "wilcoxon_pvalue": 0.012872161119648787,
+      "cohens_d_effect_size": 0.0653,
+      "statistically_significant_p005": true
+    },
+    "ild5": {
+      "model_e": 0.8772,
+      "model_f": 0.925,
+      "absolute_diff": 0.0478,
+      "relative_diff_pct": 5.44,
+      "paired_t_statistic": 25.2275,
+      "paired_t_pvalue": 1.775605449332656e-116,
+      "wilcoxon_pvalue": 1.04379801720218e-118,
+      "cohens_d_effect_size": 0.6667,
+      "statistically_significant_p005": true
+    },
+    "ild10": {
+      "model_e": 0.8972,
+      "model_f": 0.9287,
+      "absolute_diff": 0.0315,
+      "relative_diff_pct": 3.51,
+      "paired_t_statistic": 24.786,
+      "paired_t_pvalue": 3.901475250217417e-113,
+      "wilcoxon_pvalue": 1.3178663769503511e-133,
+      "cohens_d_effect_size": 0.655,
+      "statistically_significant_p005": true
+    }
+  },
+  "statistical_tests": {
+    "unit_of_analysis": "Per-impression paired metric evaluations",
+    "test_type": "Paired two-tailed Student's t-test & Wilcoxon signed-rank test",
+    "statistically_significant": true,
+    "summary": "All performance metrics exhibit statistically significant gains for Model F over Model E."
+  },
+  "ranking_difference_analysis": {
+    "evaluated_impressions": 1432,
+    "skipped_impressions": 0,
+    "top1_agreement_rate": 0.2144,
+    "top5_overlap_mean": 0.4391,
+    "top10_overlap_mean": 0.5116,
+    "spearman_rank_correlation_mean": 0.4092
+  },
+  "ablation_study": {
+    "full_model_f": {
+      "auc": 0.7001,
+      "mrr10": 0.3907,
+      "ndcg10": 0.442,
+      "ild10": 0.9287
+    },
+    "heuristic_baseline_model_e": {
+      "auc": 0.6411,
+      "mrr10": 0.3543,
+      "ndcg10": 0.4098,
+      "ild10": 0.8972
+    }
+  }
+}

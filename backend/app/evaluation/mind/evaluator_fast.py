@@ -42,6 +42,7 @@ from app.evaluation.metrics import (
 )
 from app.ai.feature_extractor import extract_candidate_features
 from app.ai.neural_ranker import neural_ranker_service
+from app.ai.diversity_service import apply_diversity_reranking
 
 logger = logging.getLogger(__name__)
 
@@ -218,25 +219,18 @@ def evaluate_mind_behavior_impression_fast(behavior, news_dict, k=10):
     scores_d_vals = np.clip(scores_c_vals * c_factor_vals, 0.0, 1.0)
 
     # ---------------------------------------------------------------
-    # MODEL E: diversity reranking (loop unchanged — already O(N))
+    # MODEL E: diversity reranking (Eq 14 subtractive penalty)
     # ---------------------------------------------------------------
     scores_e_list = [
         {"id": c["id"], "score": float(scores_d_vals[i]),
          "category": c["category"], "embedding": c["embedding"]}
         for i, c in enumerate(cand_info)
     ]
-    sorted_e = sorted(scores_e_list, key=lambda x: x["score"], reverse=True)
-    seen_cats = set()
-    e_reranked = []
-    for item in sorted_e:
-        adjusted_s = item["score"]
-        if item["category"] in seen_cats:
-            adjusted_s *= 0.90
-        seen_cats.add(item["category"])
-        e_reranked.append((item["id"], adjusted_s, item["embedding"]))
+    reranked_e_dicts = apply_diversity_reranking(scores_e_list, top_k=len(scores_e_list), score_key="score")
+    e_reranked = [(item["id"], item.get("adjusted_score", item["score"]), item["embedding"]) for item in reranked_e_dicts]
 
     # ---------------------------------------------------------------
-    # MODEL F: Neural Ranker + Diversity Reranking
+    # MODEL F: Neural Ranker + Diversity Reranking (Eq 14 subtractive penalty)
     # ---------------------------------------------------------------
     scores_f_list = []
     for i, c in enumerate(cand_info):
@@ -258,15 +252,42 @@ def evaluate_mind_behavior_impression_fast(behavior, news_dict, k=10):
             "category": c["category"], "embedding": c["embedding"]
         })
 
-    sorted_f = sorted(scores_f_list, key=lambda x: x["score"], reverse=True)
-    seen_cats_f = set()
-    f_reranked = []
-    for item in sorted_f:
-        adj_s = item["score"]
-        if item["category"] in seen_cats_f:
-            adj_s *= 0.90
-        seen_cats_f.add(item["category"])
-        f_reranked.append((item["id"], adj_s, item["embedding"]))
+    reranked_f_dicts = apply_diversity_reranking(scores_f_list, top_k=len(scores_f_list), score_key="score")
+    f_reranked = [(item["id"], item.get("adjusted_score", item["score"]), item["embedding"]) for item in reranked_f_dicts]
+
+    # ---------------------------------------------------------------
+    # ABLATION VARIANT B: Neural Ranker WITHOUT Context + WITH Diversity
+    # ---------------------------------------------------------------
+    scores_f_no_context_list = []
+    for i, c in enumerate(cand_info):
+        c_norm = c["embedding"] / np.linalg.norm(c["embedding"]) if np.linalg.norm(c["embedding"]) > 0 else c["embedding"]
+        s_sim = float(np.dot(combined_profiles[i], c_norm))
+        feat_no_ctx = extract_candidate_features(
+            candidate_embedding=c["embedding"],
+            att_user_vector=combined_profiles[i],
+            semantic_score=s_sim,
+            context_relevance=1.0,       # No context multiplier
+            recent_category_ratio=0.0,   # No category density
+            temporal_affinity=1.0,
+            recency_score=0.5,
+            popularity_score=0.0,
+            interest_score=0.0
+        )
+        n_proba = neural_ranker_service.predict_proba(feat_no_ctx)
+        f_score_no_ctx = n_proba if n_proba is not None else s_sim
+        scores_f_no_context_list.append({
+            "id": c["id"], "score": float(f_score_no_ctx),
+            "category": c["category"], "embedding": c["embedding"]
+        })
+
+    reranked_f_no_ctx_dicts = apply_diversity_reranking(scores_f_no_context_list, top_k=len(scores_f_no_context_list), score_key="score")
+    f_no_context_reranked = [(item["id"], item.get("adjusted_score", item["score"]), item["embedding"]) for item in reranked_f_no_ctx_dicts]
+
+    # ---------------------------------------------------------------
+    # ABLATION VARIANT C: Neural Ranker WITH Context + WITHOUT Diversity
+    # (Un-reranked Model F scores, identical upstream pipeline)
+    # ---------------------------------------------------------------
+    f_no_diversity = [(item["id"], item["score"], item["embedding"]) for item in scores_f_list]
 
     # ---------------------------------------------------------------
     # rank_and_metrics — identical to original
@@ -312,6 +333,8 @@ def evaluate_mind_behavior_impression_fast(behavior, news_dict, k=10):
         "model_d": rank_and_metrics(scores_d),
         "model_e": rank_and_metrics(e_reranked),
         "model_f": rank_and_metrics(f_reranked),
+        "model_no_context": rank_and_metrics(f_no_context_reranked),
+        "model_no_diversity": rank_and_metrics(f_no_diversity),
         "model_e_tuples": e_reranked,
         "model_f_tuples": f_reranked
     }

@@ -1,8 +1,9 @@
 import os
 from dotenv import load_dotenv, find_dotenv
 
-# Search for .env in cwd or parent directories
-load_dotenv(find_dotenv(usecwd=True))
+# Search for .env in project root directory
+env_path = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), ".env")
+load_dotenv(env_path)
 
 
 class Config:
@@ -58,6 +59,13 @@ class Config:
             ATTENTION_TEMPERATURE = 0.1
     except (ValueError, TypeError):
         ATTENTION_TEMPERATURE = 0.1
+
+    try:
+        DIVERSITY_LAMBDA = float(os.getenv("DIVERSITY_LAMBDA", "0.10"))
+        if DIVERSITY_LAMBDA < 0.0:
+            DIVERSITY_LAMBDA = 0.10
+    except (ValueError, TypeError):
+        DIVERSITY_LAMBDA = 0.10
 
     USE_NEURAL_RANKER = os.getenv("USE_NEURAL_RANKER", "False").lower() == "true"
     try:
