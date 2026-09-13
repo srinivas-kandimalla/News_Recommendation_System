@@ -1,0 +1,71 @@
+{
+  "project_title": "A Deep Learning-Based Context-Aware Real-Time Personalized News Recommendation Framework",
+  "framework_name": "Nexora",
+  "timestamp": "2026-09-12T18:36:00",
+  "audit_version": "v2.1-user-disjoint-canonical",
+  "environment": {
+    "os": "Windows (win32)",
+    "python_version": "3.12.9",
+    "pytorch_version": "2.6.0+cpu",
+    "scikit_learn_version": "1.6.1",
+    "numpy_version": "2.2.3"
+  },
+  "dataset_specifications": {
+    "name": "MIND-small (Microsoft News Dataset)",
+    "total_news_articles": 51282,
+    "total_impression_sessions": 149116,
+    "unique_users": 49182,
+    "split_policy": "Deterministic MD5 Hash Partition: MD5(42_uid) % 100",
+    "partitions": {
+      "train_users": {
+        "bucket_range": "< 80 (80%)",
+        "user_count": 39509
+      },
+      "val_users": {
+        "bucket_range": "80-89 (10%)",
+        "user_count": 4794
+      },
+      "test_users": {
+        "bucket_range": ">= 90 (10%)",
+        "user_count": 4879
+      },
+      "canonical_test_cohort": {
+        "user_count": 500,
+        "evaluated_impressions": 1406
+      },
+      "asserted_user_overlap": {
+        "train_val_overlap": 0,
+        "train_test_overlap": 0,
+        "val_test_overlap": 0
+      }
+    }
+  },
+  "feature_representation": {
+    "dimension": 1159,
+    "blocks": {
+      "candidate_embedding": { "dim": 384, "source": "all-MiniLM-L6-v2 semantic embedding" },
+      "candidate_aware_user_embedding": { "dim": 384, "source": "Dual-horizon attention (0.40 long <=50, 0.60 short <=5, tau=0.10)" },
+      "hadamard_interaction": { "dim": 384, "source": "Element-wise product (u_att * c_emb)" },
+      "scalar_context_features": {
+        "dim": 7,
+        "features": [
+          "semantic_score",
+          "context_relevance",
+          "recent_category_ratio",
+          "temporal_affinity",
+          "recency_score",
+          "popularity_score",
+          "interest_score"
+        ]
+      }
+    }
+  },
+  "authoritative_results_index": {
+    "main_benchmark": "backend/experiments/corrected_user_disjoint/model_f/main_benchmark_results.json",
+    "ablations": "backend/experiments/corrected_user_disjoint/ablations/ablation_results.json",
+    "baseline_nrms": "backend/experiments/corrected_user_disjoint/nrms_lite/nrms_results.json",
+    "cold_start": "backend/experiments/corrected_user_disjoint/cold_start/cold_start_results.json",
+    "robustness": "backend/experiments/corrected_user_disjoint/robustness/multiseed_results.json",
+    "latency": "backend/experiments/corrected_user_disjoint/latency/latency_breakdown.json"
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "architecture": "NRMS-Lite",
+  "embed_dim": 384,
+  "num_heads": 4,
+  "hidden_dim": 200,
+  "dropout": 0.2,
+  "seed": 42,
+  "best_val_auc": 0.6872900954388574,
+  "weights_path": "D:\\News_Recommendation_System\\backend\\models\\nrms_lite\\nrms_lite.pt"
+}

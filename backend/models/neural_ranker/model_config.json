@@ -5,15 +5,125 @@
     128,
     64
   ],
-  "feature_schema_version": "v1.1",
+  "feature_schema_version": "v2.1-log-popularity",
+  "popularity_normalization": "log(1 + N_train) / log(1 + N_max_train)",
   "random_seed": 42,
-  "train_val_split": "80/20",
-  "batch_size": 512,
-  "class_imbalance_pos_weight": 23.6525,
-  "trained_timestamp": "2026-08-29T11:46:47.157993",
-  "train_samples": 295140,
-  "val_samples": 73785,
-  "best_val_auc": 0.7299,
+  "split_policy": "User-Disjoint Hash-Bucket + Impression-Level Train/Val",
+  "user_counts": {
+    "total_users": 49182,
+    "train_users": 39509,
+    "val_users": 4794,
+    "test_users": 4879,
+    "test_cohort_500": 500
+  },
+  "overlap_verified": {
+    "train_val_overlap": 0,
+    "train_test_overlap": 0,
+    "val_test_overlap": 0
+  },
+  "impression_counts": {
+    "train_impressions": 8000,
+    "val_impressions": 2000,
+    "train_samples": 292783,
+    "val_samples": 74873
+  },
+  "class_imbalance_pos_weight": 23.6202,
+  "best_val_auc": 0.7123,
+  "trained_timestamp": "2026-09-12T12:25:48.847140",
+  "scalar_feature_distributions": {
+    "semantic_score": {
+      "mean": 0.24300000071525574,
+      "std": 0.13230000436306,
+      "min": -0.20839999616146088,
+      "max": 1.0,
+      "median": 0.2371000051498413
+    },
+    "context_relevance": {
+      "mean": 1.031999945640564,
+      "std": 0.04560000076889992,
+      "min": 1.0,
+      "max": 1.2000000476837158,
+      "median": 1.0
+    },
+    "recent_category_ratio": {
+      "mean": 0.16009999811649323,
+      "std": 0.2281000018119812,
+      "min": 0.0,
+      "max": 1.0,
+      "median": 0.0
+    },
+    "temporal_affinity": {
+      "mean": 1.0022000074386597,
+      "std": 0.018400000408291817,
+      "min": 0.9800000190734863,
+      "max": 1.059999942779541,
+      "median": 1.0
+    },
+    "recency_score": {
+      "mean": 0.9043999910354614,
+      "std": 0.08829999715089798,
+      "min": 0.550599992275238,
+      "max": 1.0,
+      "median": 0.9334999918937683
+    },
+    "popularity_score": {
+      "mean": 0.7857000231742859,
+      "std": 0.1387999951839447,
+      "min": 0.07090000063180923,
+      "max": 1.0,
+      "median": 0.8126000165939331
+    },
+    "interest_score": {
+      "mean": 0.15399999916553497,
+      "std": 0.23649999499320984,
+      "min": 0.0,
+      "max": 0.6000000238418579,
+      "median": 0.03519999980926514
+    }
+  },
+  "training_epochs_completed": 8,
+  "epoch_logs": [
+    {
+      "epoch": 1,
+      "train_loss": 1.2201,
+      "val_auc": 0.6934
+    },
+    {
+      "epoch": 2,
+      "train_loss": 1.1694,
+      "val_auc": 0.7034
+    },
+    {
+      "epoch": 3,
+      "train_loss": 1.1405,
+      "val_auc": 0.7097
+    },
+    {
+      "epoch": 4,
+      "train_loss": 1.1125,
+      "val_auc": 0.7085
+    },
+    {
+      "epoch": 5,
+      "train_loss": 1.0859,
+      "val_auc": 0.7123
+    },
+    {
+      "epoch": 6,
+      "train_loss": 1.0586,
+      "val_auc": 0.7092
+    },
+    {
+      "epoch": 7,
+      "train_loss": 1.0289,
+      "val_auc": 0.7122
+    },
+    {
+      "epoch": 8,
+      "train_loss": 1.0004,
+      "val_auc": 0.7073
+    }
+  ],
   "feature_names": [
     "c_emb_0",
     "c_emb_1",

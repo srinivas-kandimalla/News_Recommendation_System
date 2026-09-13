@@ -43,6 +43,7 @@ from app.evaluation.metrics import (
 from app.ai.feature_extractor import extract_candidate_features
 from app.ai.neural_ranker import neural_ranker_service
 from app.ai.diversity_service import apply_diversity_reranking
+from app.evaluation.mind.mind_feature_proxy import get_mind_causal_proxy, parse_mind_timestamp
 
 logger = logging.getLogger(__name__)
 
@@ -232,18 +233,27 @@ def evaluate_mind_behavior_impression_fast(behavior, news_dict, k=10):
     # ---------------------------------------------------------------
     # MODEL F: Neural Ranker + Diversity Reranking (Eq 14 subtractive penalty)
     # ---------------------------------------------------------------
+    proxy = get_mind_causal_proxy()
+    imp_ts_raw = behavior.get("timestamp") or behavior.get("time") or ""
+    imp_dt = parse_mind_timestamp(imp_ts_raw)
+
     scores_f_list = []
     for i, c in enumerate(cand_info):
+        t_affinity = proxy.calculate_temporal_affinity(c["category"], imp_dt)
+        rec_score = proxy.calculate_recency_score(c["id"], imp_dt)
+        pop_score = proxy.calculate_popularity_score(c["id"])
+        int_score = proxy.calculate_interest_score(c["category"], history_cats_list)
+
         feat_vec = extract_candidate_features(
             candidate_embedding=c["embedding"],
             att_user_vector=combined_profiles[i],
             semantic_score=float(scores_c_vals[i]),
             context_relevance=float(c_factor_vals[i]),
             recent_category_ratio=float(cat_density_vals[i]),
-            temporal_affinity=1.0,
-            recency_score=0.5,
-            popularity_score=0.0,
-            interest_score=0.0
+            temporal_affinity=t_affinity,
+            recency_score=rec_score,
+            popularity_score=pop_score,
+            interest_score=int_score
         )
         n_proba = neural_ranker_service.predict_proba(feat_vec)
         f_score = n_proba if n_proba is not None else float(scores_d_vals[i])
@@ -262,16 +272,20 @@ def evaluate_mind_behavior_impression_fast(behavior, news_dict, k=10):
     for i, c in enumerate(cand_info):
         c_norm = c["embedding"] / np.linalg.norm(c["embedding"]) if np.linalg.norm(c["embedding"]) > 0 else c["embedding"]
         s_sim = float(np.dot(combined_profiles[i], c_norm))
+        rec_score = proxy.calculate_recency_score(c["id"], imp_dt)
+        pop_score = proxy.calculate_popularity_score(c["id"])
+        int_score = proxy.calculate_interest_score(c["category"], history_cats_list)
+
         feat_no_ctx = extract_candidate_features(
             candidate_embedding=c["embedding"],
             att_user_vector=combined_profiles[i],
             semantic_score=s_sim,
             context_relevance=1.0,       # No context multiplier
             recent_category_ratio=0.0,   # No category density
-            temporal_affinity=1.0,
-            recency_score=0.5,
-            popularity_score=0.0,
-            interest_score=0.0
+            temporal_affinity=1.0,       # No temporal affinity
+            recency_score=rec_score,
+            popularity_score=pop_score,
+            interest_score=int_score
         )
         n_proba = neural_ranker_service.predict_proba(feat_no_ctx)
         f_score_no_ctx = n_proba if n_proba is not None else s_sim

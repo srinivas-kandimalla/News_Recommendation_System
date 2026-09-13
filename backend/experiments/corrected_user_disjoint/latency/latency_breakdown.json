@@ -1,0 +1,94 @@
+{
+  "timestamp": "2026-09-12T18:24:02",
+  "experiment": "Nexora Component Latency Profile (Batch Optimized)",
+  "hardware_environment": {
+    "platform": "win32",
+    "python_version": "3.12.9",
+    "inference_mode": "PyTorch CPU Batched Forward Pass",
+    "evaluated_sessions": 491,
+    "avg_candidates_per_session": 36.21
+  },
+  "stage_latency_breakdown": {
+    "stage1_embedding_retrieval": {
+      "mean_ms": 0.514,
+      "std_ms": 0.854,
+      "min_ms": 0.086,
+      "p50_ms": 0.379,
+      "p90_ms": 0.705,
+      "p95_ms": 0.861,
+      "p99_ms": 4.097,
+      "max_ms": 14.95
+    },
+    "stage2_candidate_attention": {
+      "mean_ms": 1.313,
+      "std_ms": 1.003,
+      "min_ms": 0.249,
+      "p50_ms": 1.031,
+      "p90_ms": 1.964,
+      "p95_ms": 2.927,
+      "p99_ms": 5.712,
+      "max_ms": 9.057
+    },
+    "stage3_scalar_features": {
+      "mean_ms": 1.434,
+      "std_ms": 1.84,
+      "min_ms": 0.091,
+      "p50_ms": 0.876,
+      "p90_ms": 3.117,
+      "p95_ms": 3.944,
+      "p99_ms": 8.303,
+      "max_ms": 19.017
+    },
+    "stage4_matrix_assembly": {
+      "mean_ms": 0.196,
+      "std_ms": 0.186,
+      "min_ms": 0.046,
+      "p50_ms": 0.158,
+      "p90_ms": 0.299,
+      "p95_ms": 0.396,
+      "p99_ms": 0.697,
+      "max_ms": 3.517
+    },
+    "stage5_neural_inference": {
+      "mean_ms": 13.995,
+      "std_ms": 15.701,
+      "min_ms": 0.748,
+      "p50_ms": 9.76,
+      "p90_ms": 26.587,
+      "p95_ms": 37.226,
+      "p99_ms": 81.838,
+      "max_ms": 142.331
+    },
+    "stage6_hybrid_scoring": {
+      "mean_ms": 0.149,
+      "std_ms": 0.128,
+      "min_ms": 0.013,
+      "p50_ms": 0.112,
+      "p90_ms": 0.318,
+      "p95_ms": 0.385,
+      "p99_ms": 0.606,
+      "max_ms": 1.217
+    },
+    "stage7_diversity_rerank": {
+      "mean_ms": 0.762,
+      "std_ms": 0.997,
+      "min_ms": 0.023,
+      "p50_ms": 0.498,
+      "p90_ms": 1.773,
+      "p95_ms": 2.248,
+      "p99_ms": 3.658,
+      "max_ms": 15.588
+    },
+    "total_end_to_end": {
+      "mean_ms": 18.369,
+      "std_ms": 18.665,
+      "min_ms": 1.264,
+      "p50_ms": 13.349,
+      "p90_ms": 35.406,
+      "p95_ms": 45.829,
+      "p99_ms": 98.402,
+      "max_ms": 158.129
+    }
+  },
+  "throughput_req_per_sec": 54.44
+}
